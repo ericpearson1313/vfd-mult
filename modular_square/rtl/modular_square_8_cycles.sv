@@ -94,7 +94,7 @@ module modular_square_8_cycles
    localparam int LUT_WIDTH           = WORD_LEN * NONREDUNDANT_ELEMENTS;
 
    localparam int ACC_ELEMENTS        = TWO_SEGMENTS;
-   localparam int ACC_EXTRA_ELEMENTS  = 0; // doing the full accumulate
+   localparam int ACC_EXTRA_ELEMENTS  = 1; // Addin the lower bits of the product
    localparam int ACC_EXTRA_BIT_LEN   = $clog2(ACC_ELEMENTS+ACC_EXTRA_ELEMENTS);
    localparam int ACC_BIT_LEN         = BIT_LEN + ACC_EXTRA_BIT_LEN;
 
@@ -647,9 +647,9 @@ module modular_square_8_cycles
       for (int k=0; k<NUM_ELEMENTS; k=k+1) begin
          for (int l=0; l<ACC_ELEMENTS; l=l+1) begin
             acc_stack[k][l+ACC_ELEMENTS*0][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data0[k][l][BIT_LEN-1:0]};
-            acc_stack[k][l+ACC_ELEMENTS*1][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data1[k][l + ACC_ELEMENTS][BIT_LEN-1:0]};
-            acc_stack[k][l+ACC_ELEMENTS*2][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data2[k][l + 2*ACC_ELEMENTS][BIT_LEN-1:0]};
-            acc_stack[k][l+ACC_ELEMENTS*3][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data3[k][l + 3*ACC_ELEMENTS][BIT_LEN-1:0]};
+            acc_stack[k][l+ACC_ELEMENTS*1][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data1[k][l][BIT_LEN-1:0]};
+            acc_stack[k][l+ACC_ELEMENTS*2][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data2[k][l][BIT_LEN-1:0]};
+            acc_stack[k][l+ACC_ELEMENTS*3][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data3[k][l][BIT_LEN-1:0]};
          end
             acc_stack[k][0+ACC_ELEMENTS*4][ACC_BIT_LEN-1:0] = reduced_grid_reg[k];
       end
@@ -658,7 +658,7 @@ module modular_square_8_cycles
    // Instantiate compressor trees to accumulate over accumulator columns
    generate
       for (i=0; i<NUM_ELEMENTS; i=i+1) begin : final_acc
-         compressor_tree_3_to_2 #(.NUM_ELEMENTS(ACC_ELEMENTS*4),
+         compressor_tree_3_to_2 #(.NUM_ELEMENTS(ACC_ELEMENTS*4+ACC_EXTRA_ELEMENTS),
                                   .BIT_LEN(ACC_BIT_LEN)
                                  )
             compressor_tree_3_to_2 (
