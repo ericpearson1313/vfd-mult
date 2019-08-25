@@ -14,6 +14,8 @@
 # limitations under the License.
 ################################################################################
 
+`define BUILD B001
+
 Build A - base version from Supranational
 Build B - Area accurate version: 
   Added: mult output shift register, and full adder to get the complete squared value, full residual luts (x4!), full adder (128 terms)
