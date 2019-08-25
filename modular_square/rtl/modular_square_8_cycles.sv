@@ -644,17 +644,14 @@ module modular_square_8_cycles
 
    // Accumulate reduction lut values with running total
    always_comb begin
-      for (int l=0; l<ACC_ELEMENTS; l=l+1) begin
-         for (int k=0; k<NUM_ELEMENTS; k=k+1) begin
-            acc_stack[k][l][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}},
-                                                lut_data0[k][l][BIT_LEN-1:0]};
-            acc_stack[k][l][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}},
-                                                lut_data1[k][l + ACC_ELEMENTS][BIT_LEN-1:0]};
-            acc_stack[k][l][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}},
-                                                lut_data2[k][l + 2*ACC_ELEMENTS][BIT_LEN-1:0]};
-            acc_stack[k][l][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}},
-                                                lut_data3[k][l + 3*ACC_ELEMENTS][BIT_LEN-1:0]};
+      for (int k=0; k<NUM_ELEMENTS; k=k+1) begin
+         for (int l=0; l<ACC_ELEMENTS; l=l+1) begin
+            acc_stack[k][l+ACC_ELEMENTS*0][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data0[k][l][BIT_LEN-1:0]};
+            acc_stack[k][l+ACC_ELEMENTS*1][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data1[k][l + ACC_ELEMENTS][BIT_LEN-1:0]};
+            acc_stack[k][l+ACC_ELEMENTS*2][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data2[k][l + 2*ACC_ELEMENTS][BIT_LEN-1:0]};
+            acc_stack[k][l+ACC_ELEMENTS*3][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data3[k][l + 3*ACC_ELEMENTS][BIT_LEN-1:0]};
          end
+            acc_stack[k][0+ACC_ELEMENTS*4][ACC_BIT_LEN-1:0] = reduced_grid_reg[k];
       end
    end
 
