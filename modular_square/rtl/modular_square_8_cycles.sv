@@ -1,5 +1,5 @@
 /*******************************************************************************
-  Copyright 2019 Supranational LLC
+  Copyright 2019 Eric Pearson
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 module modular_square_8_cycles
    #(
      parameter int REDUNDANT_ELEMENTS    = 2,
-     parameter int NONREDUNDANT_ELEMENTS = 8,
+     parameter int NONREDUNDANT_ELEMENTS = 64,
      parameter int NUM_SEGMENTS          = 4,
      parameter int BIT_LEN               = 17,
      parameter int WORD_LEN              = 16,
@@ -75,7 +75,7 @@ module modular_square_8_cycles
    localparam int GRID_PAD_CARRY      = GRID_BIT_LEN - (MUL_BIT_LEN - WORD_LEN);
    localparam int GRID_PAD_C_SHIFT    = GRID_PAD_CARRY - 1;
    localparam int GRID_PAD_RESULT     = GRID_BIT_LEN - BIT_LEN;
-   localparam int GRID_NUM_ELEMENTS   = 9;
+   localparam int GRID_NUM_ELEMENTS   = 8;
 
    // TODO - The +1 is not really needed.  Used in loops below for convenience
    // Because there is a j+1 in setting carry over
@@ -83,7 +83,8 @@ module modular_square_8_cycles
    localparam int GRID_SIZE           = (MUL_NUM_ELEMENTS*2) + 1 +
                                         SEGMENT_ELEMENTS;
 `else
-   localparam int GRID_SIZE           = (MUL_NUM_ELEMENTS*2) + 1 +
+   // Full adder for complete sqaure
+   localparam int GRID_SIZE           = (MUL_NUM_ELEMENTS*8) + 1 +
                                      (MUL_NUM_ELEMENTS - REDUNDANT_ELEMENTS);
 `endif
 
@@ -93,7 +94,7 @@ module modular_square_8_cycles
    localparam int LUT_WIDTH           = WORD_LEN * NONREDUNDANT_ELEMENTS;
 
    localparam int ACC_ELEMENTS        = TWO_SEGMENTS;
-   localparam int ACC_EXTRA_ELEMENTS  = 3; // Prev, V3, V2V0
+   localparam int ACC_EXTRA_ELEMENTS  = 0; // doing the full accumulate
    localparam int ACC_EXTRA_BIT_LEN   = $clog2(ACC_ELEMENTS+ACC_EXTRA_ELEMENTS);
    localparam int ACC_BIT_LEN         = BIT_LEN + ACC_EXTRA_BIT_LEN;
 
@@ -137,6 +138,14 @@ module modular_square_8_cycles
 `else
    logic [MUL_BIT_LEN-1:0]   mul_cout[NUM_MULTIPLIERS][MUL_NUM_ELEMENTS*2];
    logic [MUL_BIT_LEN-1:0]   mul_s[NUM_MULTIPLIERS][MUL_NUM_ELEMENTS*2];
+   reg   [MUL_BIT_LEN-1:0]   mul_reg0_cout[NUM_MULTIPLIERS][MUL_NUM_ELEMENTS*2];
+   reg   [MUL_BIT_LEN-1:0]   mul_reg0_s[NUM_MULTIPLIERS][MUL_NUM_ELEMENTS*2];
+   reg   [MUL_BIT_LEN-1:0]   mul_reg1_cout[NUM_MULTIPLIERS][MUL_NUM_ELEMENTS*2];
+   reg   [MUL_BIT_LEN-1:0]   mul_reg1_s[NUM_MULTIPLIERS][MUL_NUM_ELEMENTS*2];
+   reg   [MUL_BIT_LEN-1:0]   mul_reg2_cout[NUM_MULTIPLIERS][MUL_NUM_ELEMENTS*2];
+   reg   [MUL_BIT_LEN-1:0]   mul_reg2_s[NUM_MULTIPLIERS][MUL_NUM_ELEMENTS*2];
+   reg   [MUL_BIT_LEN-1:0]   mul_reg3_cout[NUM_MULTIPLIERS][MUL_NUM_ELEMENTS*2];
+   reg   [MUL_BIT_LEN-1:0]   mul_reg3_s[NUM_MULTIPLIERS][MUL_NUM_ELEMENTS*2];
 `endif
 
    logic [GRID_BIT_LEN-1:0]  grid[GRID_SIZE][GRID_NUM_ELEMENTS];
@@ -145,6 +154,7 @@ module modular_square_8_cycles
 
    logic [GRID_BIT_LEN:0]    grid_sum[GRID_SIZE];
    logic [BIT_LEN-1:0]       reduced_grid_sum[GRID_SIZE];
+   reg   [BIT_LEN-1:0]       reduced_grid_reg[GRID_SIZE];
 
    logic [BIT_LEN-1:0]       v7v6[ACC_ELEMENTS];
    logic [BIT_LEN-1:0]       v5_partial[SEGMENT_ELEMENTS];
@@ -164,10 +174,16 @@ module modular_square_8_cycles
    logic                     set_overflow;
    logic                     v7v6_overflow;
    logic                     v5v4_overflow;
-   logic [LOOK_UP_WIDTH:0]   lut_addr[ACC_ELEMENTS];
-   logic [BIT_LEN-1:0]       lut_data[NUM_ELEMENTS][ACC_ELEMENTS];
+   logic [LOOK_UP_WIDTH:0]   lut_addr0[ACC_ELEMENTS];
+   logic [BIT_LEN-1:0]       lut_data0[NUM_ELEMENTS][ACC_ELEMENTS];
+   logic [LOOK_UP_WIDTH:0]   lut_addr1[ACC_ELEMENTS];
+   logic [BIT_LEN-1:0]       lut_data1[NUM_ELEMENTS][ACC_ELEMENTS];
+   logic [LOOK_UP_WIDTH:0]   lut_addr2[ACC_ELEMENTS];
+   logic [BIT_LEN-1:0]       lut_data2[NUM_ELEMENTS][ACC_ELEMENTS];
+   logic [LOOK_UP_WIDTH:0]   lut_addr3[ACC_ELEMENTS];
+   logic [BIT_LEN-1:0]       lut_data3[NUM_ELEMENTS][ACC_ELEMENTS];
 
-   logic [ACC_BIT_LEN-1:0]   acc_stack[NUM_ELEMENTS][ACC_ELEMENTS + 
+   logic [ACC_BIT_LEN-1:0]   acc_stack[NUM_ELEMENTS][4*ACC_ELEMENTS + 
                                                      ACC_EXTRA_ELEMENTS];
    logic [ACC_BIT_LEN-1:0]   acc_C[NUM_ELEMENTS];
    logic [ACC_BIT_LEN-1:0]   acc_S[NUM_ELEMENTS];
@@ -271,24 +287,6 @@ module modular_square_8_cycles
                next_cycle[CYCLE_7]         = 1'b1;
             end
             curr_cycle[CYCLE_7]: begin
-               if (v5v4_overflow || v7v6_overflow) begin
-                  next_cycle[CYCLE_8]      = 1'b1;
-               end
-               else begin
-                  next_cycle[CYCLE_0]      = 1'b1;
-                  out_valid                = 1'b1;
-               end
-            end
-            curr_cycle[CYCLE_8]: begin
-               if (v5v4_overflow && v7v6_overflow) begin
-                  next_cycle[CYCLE_9]      = 1'b1;
-               end
-               else begin
-                  next_cycle[CYCLE_0]      = 1'b1;
-                  out_valid                = 1'b1;
-               end
-            end
-            curr_cycle[CYCLE_9]: begin
                next_cycle[CYCLE_0]         = 1'b1;
                out_valid                   = 1'b1;
             end
@@ -440,6 +438,26 @@ module modular_square_8_cycles
       end
    endgenerate
 
+   // Mul output shift register file to gather all results in parallel.
+   always_ff @(posedge clk) begin
+       if(  (curr_cycle[CYCLE_3] ||
+             curr_cycle[CYCLE_4] || 
+             curr_cycle[CYCLE_4] || 
+             curr_cycle[CYCLE_4] ) ) begin
+           mul_reg0_cout <= mul_cout;
+           mul_reg1_cout <= mul_reg0_cout;
+           mul_reg2_cout <= mul_reg1_cout;
+           mul_reg3_cout <= mul_reg2_cout;
+           mul_reg0_s    <= mul_s;
+           mul_reg1_s    <= mul_reg0_s;
+           mul_reg2_s    <= mul_reg1_s;
+           mul_reg3_s    <= mul_reg2_s;
+       end
+   end
+
+
+
+
    always_comb begin
       // Initialize grid for accumulating multiplier results across columns
       for (int k=0; k<GRID_SIZE; k=k+1) begin
@@ -447,111 +465,74 @@ module modular_square_8_cycles
             grid[k][l] = '0;
          end
       end
-
-      // Place multiplier results into proper grid location
-      for (int k=0; k<(MUL_NUM_ELEMENTS*2); k=k+1) begin
-         if (mul_result_shift[0] == 1'b1) begin
-            grid[k][0]   = {{GRID_PAD{1'b0}},
-                            mul_cout[0][k][WORD_LEN-2:0] , 1'b0};
-            grid[k+1][1] = {{GRID_PAD_C_SHIFT{1'b0}},
-                            mul_cout[0][k][MUL_BIT_LEN-1:WORD_LEN-1]};
-            grid[k][2]   = {{GRID_PAD{1'b0}},
-                            mul_s[0][k][WORD_LEN-2:0] , 1'b0};
-            grid[k+1][3] = {{GRID_PAD_C_SHIFT{1'b0}},
-                            mul_s[0][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+      
+      // place multiplier elements into proper grid locations
+      // keep same order as orig 8 cycle mult
+      // Multiplier output { 1, 0)
+      // mul_reg3_s/cout = {DD,CD}, 
+      // mul_reg2_s/cout = {DB,CC}, 
+      // mul_reg1_s/cout = {CB,DA}, 
+      // mul_reg0_s/cout = {BB,CA}, 
+      // mul_s/cout      = {AB,AA}, 
+      
+     for (int k=0; k<(MUL_NUM_ELEMENTS*2); k=k+1) begin
+         // Squared terms are not scaled by 2
+         // AA is mul_s/cout[1] , no shift, start at offset 0, row 0123     
+         grid[MUL_NUM_ELEMENTS*0 + k   ][0] = {{GRID_PAD        {1'b0}},      mul_cout[0][k][WORD_LEN-1   :0       ]};
+         grid[MUL_NUM_ELEMENTS*0 + k+1 ][1] = {{GRID_PAD_CARRY  {1'b0}},      mul_cout[0][k][MUL_BIT_LEN-1:WORD_LEN]};
+         grid[MUL_NUM_ELEMENTS*0 + k   ][2] = {{GRID_PAD        {1'b0}},      mul_s   [0][k][WORD_LEN-   1:0       ]};
+         grid[MUL_NUM_ELEMENTS*0 + k+1 ][3] = {{GRID_PAD_CARRY  {1'b0}},      mul_s   [0][k][MUL_BIT_LEN-1:WORD_LEN]};               
+         // BB is mul_reg1_s/cout[1] , no shift, start at offset 2, row 4567     
+         grid[MUL_NUM_ELEMENTS*2 + k   ][4] = {{GRID_PAD        {1'b0}}, mul_reg0_cout[1][k][WORD_LEN-1   :0       ]};
+         grid[MUL_NUM_ELEMENTS*2 + k+1 ][5] = {{GRID_PAD_CARRY  {1'b0}}, mul_reg0_cout[1][k][MUL_BIT_LEN-1:WORD_LEN]};
+         grid[MUL_NUM_ELEMENTS*2 + k   ][6] = {{GRID_PAD        {1'b0}}, mul_reg0_s   [1][k][WORD_LEN-   1:0       ]};
+         grid[MUL_NUM_ELEMENTS*2 + k+1 ][7] = {{GRID_PAD_CARRY  {1'b0}}, mul_reg0_s   [1][k][MUL_BIT_LEN-1:WORD_LEN]};               
+         // CC is mul_reg2_s/cout[0] , no shift, start at offset 4, row 0123
+         grid[MUL_NUM_ELEMENTS*4 + k   ][0] = {{GRID_PAD        {1'b0}}, mul_reg2_cout[0][k][WORD_LEN-1   :0       ]};
+         grid[MUL_NUM_ELEMENTS*4 + k+1 ][1] = {{GRID_PAD_CARRY  {1'b0}}, mul_reg2_cout[0][k][MUL_BIT_LEN-1:WORD_LEN]};
+         grid[MUL_NUM_ELEMENTS*4 + k   ][2] = {{GRID_PAD        {1'b0}}, mul_reg2_s   [0][k][WORD_LEN-   1:0       ]};
+         grid[MUL_NUM_ELEMENTS*4 + k+1 ][3] = {{GRID_PAD_CARRY  {1'b0}}, mul_reg2_s   [0][k][MUL_BIT_LEN-1:WORD_LEN]};               
+         // DD is mul_reg3_s/cout[1] , no shift, start at offset 6, row 4567
+         grid[MUL_NUM_ELEMENTS*6 + k   ][4] = {{GRID_PAD        {1'b0}}, mul_reg3_cout[1][k][WORD_LEN-1   :0       ]};
+         grid[MUL_NUM_ELEMENTS*6 + k+1 ][5] = {{GRID_PAD_CARRY  {1'b0}}, mul_reg3_cout[1][k][MUL_BIT_LEN-1:WORD_LEN]};
+         grid[MUL_NUM_ELEMENTS*6 + k   ][6] = {{GRID_PAD        {1'b0}}, mul_reg3_s   [1][k][WORD_LEN-   1:0       ]};
+         grid[MUL_NUM_ELEMENTS*6 + k+1 ][7] = {{GRID_PAD_CARRY  {1'b0}}, mul_reg3_s   [1][k][MUL_BIT_LEN-1:WORD_LEN]};               
+         
+         // All other products are scaled by 2 (left shift)
+         // AB is      mul_s/cout[1] , shift, start at offset 1, row 0123
+         grid[MUL_NUM_ELEMENTS*1 + k   ][0] = {{GRID_PAD        {1'b0}},      mul_cout[1][k][WORD_LEN-2   :0         ], 1'b0};
+         grid[MUL_NUM_ELEMENTS*1 + k+1 ][1] = {{GRID_PAD_C_SHIFT{1'b0}},      mul_cout[1][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+         grid[MUL_NUM_ELEMENTS*1 + k   ][2] = {{GRID_PAD        {1'b0}},      mul_s   [1][k][WORD_LEN-2   :0         ], 1'b0};
+         grid[MUL_NUM_ELEMENTS*1 + k+1 ][3] = {{GRID_PAD_C_SHIFT{1'b0}},      mul_s   [1][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+         // AC is mul_reg0_s/cout[0] , shift, start at offset 2, row 0123
+         grid[MUL_NUM_ELEMENTS*2 + k   ][0] = {{GRID_PAD        {1'b0}}, mul_reg0_cout[0][k][WORD_LEN-2   :0         ], 1'b0};
+         grid[MUL_NUM_ELEMENTS*2 + k+1 ][1] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_reg0_cout[0][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+         grid[MUL_NUM_ELEMENTS*2 + k   ][2] = {{GRID_PAD        {1'b0}}, mul_reg0_s   [0][k][WORD_LEN-2   :0         ], 1'b0};
+         grid[MUL_NUM_ELEMENTS*2 + k+1 ][3] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_reg0_s   [0][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+         // AD is mul_reg1_s/cout[0] , shift, start at offset 3, row 0123
+         grid[MUL_NUM_ELEMENTS*3 + k   ][0] = {{GRID_PAD        {1'b0}}, mul_reg1_cout[0][k][WORD_LEN-2   :0         ], 1'b0};
+         grid[MUL_NUM_ELEMENTS*3 + k+1 ][1] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_reg1_cout[0][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+         grid[MUL_NUM_ELEMENTS*3 + k   ][2] = {{GRID_PAD        {1'b0}}, mul_reg1_s   [0][k][WORD_LEN-2   :0         ], 1'b0};
+         grid[MUL_NUM_ELEMENTS*3 + k+1 ][3] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_reg1_s   [0][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+         // BC is mul_reg1_s/cout[1] , shift, start at offset 3, row 4567
+         grid[MUL_NUM_ELEMENTS*3 + k   ][4] = {{GRID_PAD        {1'b0}}, mul_reg1_cout[1][k][WORD_LEN-2   :0         ], 1'b0};
+         grid[MUL_NUM_ELEMENTS*3 + k+1 ][5] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_reg1_cout[1][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+         grid[MUL_NUM_ELEMENTS*3 + k   ][6] = {{GRID_PAD        {1'b0}}, mul_reg1_s   [1][k][WORD_LEN-2   :0         ], 1'b0};
+         grid[MUL_NUM_ELEMENTS*3 + k+1 ][7] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_reg1_s   [1][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+         // BD is mul_reg2_s/cout[1] , shift, start at offset 4, row 4567
+         grid[MUL_NUM_ELEMENTS*4 + k   ][4] = {{GRID_PAD        {1'b0}}, mul_reg2_cout[1][k][WORD_LEN-2   :0         ], 1'b0};
+         grid[MUL_NUM_ELEMENTS*4 + k+1 ][5] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_reg2_cout[1][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+         grid[MUL_NUM_ELEMENTS*4 + k   ][6] = {{GRID_PAD        {1'b0}}, mul_reg2_s   [1][k][WORD_LEN-2   :0         ], 1'b0};
+         grid[MUL_NUM_ELEMENTS*4 + k+1 ][7] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_reg2_s   [1][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+         // CD is mul_reg3_s/cout[0] , shift, start at offset 5, row 0123
+         grid[MUL_NUM_ELEMENTS*5 + k   ][0] = {{GRID_PAD        {1'b0}}, mul_reg3_cout[0][k][WORD_LEN-2   :0         ], 1'b0};
+         grid[MUL_NUM_ELEMENTS*5 + k+1 ][1] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_reg3_cout[0][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+         grid[MUL_NUM_ELEMENTS*5 + k   ][2] = {{GRID_PAD        {1'b0}}, mul_reg3_s   [0][k][WORD_LEN-2   :0         ], 1'b0};
+         grid[MUL_NUM_ELEMENTS*5 + k+1 ][3] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_reg3_s   [0][k][MUL_BIT_LEN-1:WORD_LEN-1]};
          end
-         else begin
-            grid[k][0]   = {{GRID_PAD{1'b0}},
-                            mul_cout[0][k][WORD_LEN-1:0]};
-            grid[k+1][1] = {{GRID_PAD_CARRY{1'b0}},
-                            mul_cout[0][k][MUL_BIT_LEN-1:WORD_LEN]};
-            grid[k][2]   = {{GRID_PAD{1'b0}},
-                            mul_s[0][k][WORD_LEN-1:0]};
-            grid[k+1][3] = {{GRID_PAD_CARRY{1'b0}},
-                            mul_s[0][k][MUL_BIT_LEN-1:WORD_LEN]};
-         end
-
-         if (mul1_first_select == 1'b1) begin
-            if (mul_result_shift[1] == 1'b1) begin
-               grid[k][4]   = {{GRID_PAD{1'b0}},
-                               mul_cout[1][k][WORD_LEN-2:0] , 1'b0};
-               grid[k+1][5] = {{GRID_PAD_C_SHIFT{1'b0}},
-                               mul_cout[1][k][MUL_BIT_LEN-1:WORD_LEN-1]};
-               grid[k][6]   = {{GRID_PAD{1'b0}},
-                               mul_s[1][k][WORD_LEN-2:0] , 1'b0};
-               grid[k+1][7] = {{GRID_PAD_C_SHIFT{1'b0}},
-                               mul_s[1][k][MUL_BIT_LEN-1:WORD_LEN-1]};
-            end
-            else begin
-               grid[k][4]   = {{GRID_PAD{1'b0}},
-                               mul_cout[1][k][WORD_LEN-1:0]};
-               grid[k+1][5] = {{GRID_PAD_CARRY{1'b0}},
-                               mul_cout[1][k][MUL_BIT_LEN-1:WORD_LEN]};
-               grid[k][6]   = {{GRID_PAD{1'b0}},
-                               mul_s[1][k][WORD_LEN-1:0]};
-               grid[k+1][7] = {{GRID_PAD_CARRY{1'b0}},
-                               mul_s[1][k][MUL_BIT_LEN-1:WORD_LEN]};
-            end
-         end
-         else begin
-            if (mul_result_shift[1] == 1'b1) begin
-               grid[k+(MUL_NUM_ELEMENTS-REDUNDANT_ELEMENTS)][4]   =
-                  {{GRID_PAD{1'b0}}, mul_cout[1][k][WORD_LEN-2:0] , 1'b0};
-               grid[k+1+(MUL_NUM_ELEMENTS-REDUNDANT_ELEMENTS)][5] =
-                  {{GRID_PAD_C_SHIFT{1'b0}},
-                   mul_cout[1][k][MUL_BIT_LEN-1:WORD_LEN-1]};
-               grid[k+(MUL_NUM_ELEMENTS-REDUNDANT_ELEMENTS)][6]   =
-                  {{GRID_PAD{1'b0}}, mul_s[1][k][WORD_LEN-2:0] , 1'b0};
-               grid[k+1+(MUL_NUM_ELEMENTS-REDUNDANT_ELEMENTS)][7] =
-                  {{GRID_PAD_C_SHIFT{1'b0}},
-                   mul_s[1][k][MUL_BIT_LEN-1:WORD_LEN-1]};
-            end
-            else begin
-               grid[k+(MUL_NUM_ELEMENTS-REDUNDANT_ELEMENTS)][4]   =
-                  {{GRID_PAD{1'b0}}, mul_cout[1][k][WORD_LEN-1:0]};
-               grid[k+1+(MUL_NUM_ELEMENTS-REDUNDANT_ELEMENTS)][5] =
-                  {{GRID_PAD_CARRY{1'b0}},
-                   mul_cout[1][k][MUL_BIT_LEN-1:WORD_LEN]};
-               grid[k+(MUL_NUM_ELEMENTS-REDUNDANT_ELEMENTS)][6]   =
-                  {{GRID_PAD{1'b0}}, mul_s[1][k][WORD_LEN-1:0]};
-               grid[k+1+(MUL_NUM_ELEMENTS-REDUNDANT_ELEMENTS)][7] =
-                  {{GRID_PAD_CARRY{1'b0}},
-                   mul_s[1][k][MUL_BIT_LEN-1:WORD_LEN]};
-            end
-         end
-      end
-
-      // Set last grid row based on cycle 
-      if (curr_cycle[CYCLE_3]) begin
-         for (int k=0; k<SEGMENT_ELEMENTS; k=k+1) begin
-            grid[k+SEGMENT_ELEMENTS][8] = {{GRID_PAD_RESULT{1'b0}},
-                                           v5_partial[k][BIT_LEN-1:0]};
-         end
-      end
-
-      if (curr_cycle[CYCLE_4]) begin
-         for (int k=0; k<(ACC_ELEMENTS); k=k+1) begin
-            grid[k+SEGMENT_ELEMENTS][8] = {{GRID_PAD_RESULT{1'b0}},
-                                           v5v4_partial[k][BIT_LEN-1:0]};
-         end
-      end
-
-      if (curr_cycle[CYCLE_5]) begin
-         for (int k=0; k<SEGMENT_ELEMENTS; k=k+1) begin
-            grid[k+SEGMENT_ELEMENTS][8] = {{GRID_PAD_RESULT{1'b0}},
-                                           v3_partial[k][BIT_LEN-1:0]};
-         end
-      end
-
-      if (curr_cycle[CYCLE_6]) begin
-         for (int k=0; k<SEGMENT_ELEMENTS; k=k+1) begin
-            grid[k+(SEGMENT_ELEMENTS*2)][8] = {{GRID_PAD_RESULT{1'b0}},
-                                               v2_partial[k][BIT_LEN-1:0]};
-         end
-      end
    end
 
-   // Instantiate compressor trees to accumulate over grid columns
+   // Instantiate 8 input compressor trees to accumulate over grid columns
    generate
       for (i=0; i<GRID_SIZE; i=i+1) begin : grid_acc
          compressor_tree_3_to_2 #(.NUM_ELEMENTS(GRID_NUM_ELEMENTS),
@@ -585,117 +566,23 @@ module modular_square_8_cycles
                                {{(BIT_LEN-(GRID_BIT_LEN-WORD_LEN))-1{1'b0}},
                                 grid_sum[GRID_SIZE-2][GRID_BIT_LEN:WORD_LEN]};
    end
-
-   // Flop segments out of grid accumulator based on cycle 
+   
    always_ff @(posedge clk) begin
-      if (curr_cycle[CYCLE_2]) begin
-         for (int k=0; k<ACC_ELEMENTS; k=k+1) begin
-            v7v6[k]          <= reduced_grid_sum[k + SEGMENT_ELEMENTS];
-         end
-
-         for (int k=0; k<SEGMENT_ELEMENTS; k=k+1) begin
-            v5_partial[k]    <= reduced_grid_sum[k];
-         end
-      end
-
-      if (curr_cycle[CYCLE_3]) begin
-         for (int k=0; k<ACC_ELEMENTS; k=k+1) begin
-            v5v4_partial[k]  <= reduced_grid_sum[k];
-         end
-      end
-
-      if (curr_cycle[CYCLE_4]) begin
-         for (int k=0; k<ACC_ELEMENTS; k=k+1) begin
-            v5v4[k]          <= reduced_grid_sum[k + SEGMENT_ELEMENTS];
-         end
-
-         for (int k=0; k<SEGMENT_ELEMENTS; k=k+1) begin
-            v3_partial[k]    <= reduced_grid_sum[k];
-         end
-      end
-
-      if (curr_cycle[CYCLE_5]) begin
-         for (int k=0; k<(SEGMENT_ELEMENTS+REDUNDANT_ELEMENTS); k=k+1) begin
-            v3[k]            <= reduced_grid_sum[k + SEGMENT_ELEMENTS];
-         end
-
-         for (int k=0; k<SEGMENT_ELEMENTS; k=k+1) begin
-            v2_partial[k]    <= reduced_grid_sum[k];
-         end
-      end
-
-      if (curr_cycle[CYCLE_6]) begin
-         for (int k=0; k<THREE_SEGMENTS; k=k+1) begin
-            v2v0[k]          <= reduced_grid_sum[k];
-         end
+      if (curr_cycle[CYCLE_7]) begin
+         reduced_grid_reg <= reduced_grid_sum;
       end
    end
+   
+
 
    // Set values for which segments to lookup in reduction LUTs
    always_comb begin
-      set_overflow                  = 1'b0;
-
-      if (curr_cycle[CYCLE_3] || curr_cycle[CYCLE_4] || 
-          (curr_cycle[CYCLE_5] && v7v6_overflow)) begin
-         curr_lookup_segment     = v7v6;
-      end
-      else begin
-         curr_lookup_segment     = v5v4;
-      end
-
-      curr_lookup_shift          = (curr_cycle[CYCLE_3] ||
-                                    (curr_cycle[CYCLE_5] && !v7v6_overflow) || 
-                                    (curr_cycle[CYCLE_6] &&  v7v6_overflow));
-
-      curr_lookup_check_overflow =  (curr_cycle[CYCLE_4] || 
-                                     curr_cycle[CYCLE_6]);
-
-      curr_lookup_upper_table    = ((curr_cycle[CYCLE_5] && !v7v6_overflow) || 
-                                     curr_cycle[CYCLE_6]                    ||
-                                     curr_cycle[CYCLE_7]                    ||
-                                     curr_cycle[CYCLE_8]);
-
-      curr_overflow              = ((curr_cycle[CYCLE_5] && v7v6_overflow) || 
-                                    (curr_cycle[CYCLE_7] && 
-                                     (v5v4_overflow & !v7v6_overflow))     ||
-                                    curr_cycle[CYCLE_8]);
-
       for (int k=0; k<ACC_ELEMENTS; k=k+1) begin
-         lut_addr[k][LOOK_UP_WIDTH-1:0] = 
-            curr_lookup_segment[k][LOOK_UP_WIDTH-1:0];
-
-         // Use upper part of word
-         if (curr_lookup_shift) begin
-            lut_addr[k][LOOK_UP_WIDTH-1:0] = 
-               curr_lookup_segment[k][(LOOK_UP_WIDTH*2)-1:LOOK_UP_WIDTH];
-         end
-
-         // Check if there is an overflow 
-         if (curr_lookup_check_overflow) begin
-            set_overflow |= (curr_lookup_segment[k][BIT_LEN-1:WORD_LEN] > 0);
-         end
-
-         // If there was an overflow, use upper bit(s) beyond word
-         if (curr_overflow) begin
-            lut_addr[k][LOOK_UP_WIDTH-1:0] = 
-               {{(LOOK_UP_WIDTH-(BIT_LEN-WORD_LEN)){1'b0}},
-                curr_lookup_segment[k][BIT_LEN-1:WORD_LEN]};
-         end
-
-         // Set the upper LUT address bit for V5V4
-         lut_addr[k][LOOK_UP_WIDTH] = curr_lookup_upper_table;
+         lut_addr0[k][LOOK_UP_WIDTH-1:0] = { 1'b0, reduced_grid_sum[k+64][ LOOK_UP_WIDTH-1    : 0]            }; // LBSs of lower words
+         lut_addr1[k][LOOK_UP_WIDTH-1:0] = { 1'b0, reduced_grid_sum[k+64][(LOOK_UP_WIDTH*2)-1 : LOOK_UP_WIDTH]}; // MSB of lower words
+         lut_addr2[k][LOOK_UP_WIDTH-1:0] = { 1'b1, reduced_grid_sum[k+96][ LOOK_UP_WIDTH-1    : 0]            }; // LSB of Upper words
+         lut_addr3[k][LOOK_UP_WIDTH-1:0] = { 1'b1, reduced_grid_sum[k+96][(LOOK_UP_WIDTH*2)-1 : LOOK_UP_WIDTH]}; // MSB of upper words
       end
-   end
-
-   // Flop overflow values
-   always_ff @(posedge clk) begin
-      if (curr_cycle[CYCLE_4]) begin
-         v7v6_overflow <= set_overflow;
-      end 
-
-      if (curr_cycle[CYCLE_6]) begin
-         v5v4_overflow <= set_overflow;
-      end 
    end
 
    // Instantiate memory holding reduction LUTs
@@ -706,50 +593,67 @@ module modular_square_8_cycles
                    .NUM_SEGMENTS(NUM_SEGMENTS),
                    .WORD_LEN(WORD_LEN)
                   )
-      reduction_lut (
+      reduction_lut_0 (
                      .clk(clk),
-                     .shift_high(curr_lookup_shift),
-                     .shift_overflow(curr_overflow),
-                     .lut_addr(lut_addr),
-                     .lut_data(lut_data),
+                     .shift_high(1'b0), // lower
+                     .shift_overflow(1'b00),
+                     .lut_addr(lut_addr0),
+                     .lut_data(lut_data0),
+                     .we(0)
+                    );
+   reduction_lut #(.REDUNDANT_ELEMENTS(REDUNDANT_ELEMENTS),
+                   .NONREDUNDANT_ELEMENTS(NONREDUNDANT_ELEMENTS),
+                   .NUM_SEGMENTS(NUM_SEGMENTS),
+                   .WORD_LEN(WORD_LEN)
+                  )
+      reduction_lut_1 (
+                     .clk(clk),
+                     .shift_high(1'b1), // Upper
+                     .shift_overflow(1'b0),
+                     .lut_addr(lut_addr1),
+                     .lut_data(lut_data1),
+                     .we(0)
+                    );
+   reduction_lut #(.REDUNDANT_ELEMENTS(REDUNDANT_ELEMENTS),
+                   .NONREDUNDANT_ELEMENTS(NONREDUNDANT_ELEMENTS),
+                   .NUM_SEGMENTS(NUM_SEGMENTS),
+                   .WORD_LEN(WORD_LEN)
+                  )
+      reduction_lut_2 (
+                     .clk(clk),
+                     .shift_high(1'b0), // Lower
+                     .shift_overflow(1'b0),
+                     .lut_addr(lut_addr2),
+                     .lut_data(lut_data2),
+                     .we(0)
+                    );
+   reduction_lut #(.REDUNDANT_ELEMENTS(REDUNDANT_ELEMENTS),
+                   .NONREDUNDANT_ELEMENTS(NONREDUNDANT_ELEMENTS),
+                   .NUM_SEGMENTS(NUM_SEGMENTS),
+                   .WORD_LEN(WORD_LEN)
+                  )
+      reduction_lut_3 (
+                     .clk(clk),
+                     .shift_high(1'b1), // Upper
+                     .shift_overflow(1'b0),
+                     .lut_addr(lut_addr3),
+                     .lut_data(lut_data3),
                      .we(0)
                     );
    /* verilator lint_on PINMISSING */
 
    // Accumulate reduction lut values with running total
    always_comb begin
-      for (int l=0; l<ACC_EXTRA_ELEMENTS; l=l+1) begin
-         for (int k=0; k<NUM_ELEMENTS; k=k+1) begin
-            acc_stack[k][l + ACC_ELEMENTS] = '0;
-         end
-      end
-
       for (int l=0; l<ACC_ELEMENTS; l=l+1) begin
          for (int k=0; k<NUM_ELEMENTS; k=k+1) begin
             acc_stack[k][l][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}},
-                                                lut_data[k][l][BIT_LEN-1:0]};
-         end
-      end
-
-      // Add in V3 - V0
-      if (curr_cycle[CYCLE_7]) begin
-         for (int k=0; k<THREE_SEGMENTS; k=k+1) begin
-            acc_stack[k][ACC_ELEMENTS+1][ACC_BIT_LEN-1:0] = 
-               {{ACC_EXTRA_BIT_LEN{1'b0}}, v2v0[k][BIT_LEN-1:0]};
-         end
-
-         for (int k=0; k<(SEGMENT_ELEMENTS+REDUNDANT_ELEMENTS); k=k+1) begin
-            acc_stack[k+(SEGMENT_ELEMENTS*3)][ACC_ELEMENTS+2][ACC_BIT_LEN-1:0] =
-               {{ACC_EXTRA_BIT_LEN{1'b0}}, v3[k][BIT_LEN-1:0]};
-         end
-      end
-
-      // Add the previous accumulation in
-      if (curr_cycle[CYCLE_5] || curr_cycle[CYCLE_6] || curr_cycle[CYCLE_7] ||
-          curr_cycle[CYCLE_8] || curr_cycle[CYCLE_9]) begin
-         for (int k=0; k<NUM_ELEMENTS; k=k+1) begin
-            acc_stack[k][ACC_ELEMENTS][ACC_BIT_LEN-1:0] = 
-               {{ACC_EXTRA_BIT_LEN{1'b0}}, sq_out[k][BIT_LEN-1:0]};
+                                                lut_data0[k][l][BIT_LEN-1:0]};
+            acc_stack[k][l][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}},
+                                                lut_data1[k][l + ACC_ELEMENTS][BIT_LEN-1:0]};
+            acc_stack[k][l][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}},
+                                                lut_data2[k][l + 2*ACC_ELEMENTS][BIT_LEN-1:0]};
+            acc_stack[k][l][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}},
+                                                lut_data3[k][l + 3*ACC_ELEMENTS][BIT_LEN-1:0]};
          end
       end
    end
@@ -757,8 +661,7 @@ module modular_square_8_cycles
    // Instantiate compressor trees to accumulate over accumulator columns
    generate
       for (i=0; i<NUM_ELEMENTS; i=i+1) begin : final_acc
-         compressor_tree_3_to_2 #(.NUM_ELEMENTS(ACC_ELEMENTS + 
-                                                ACC_EXTRA_ELEMENTS),
+         compressor_tree_3_to_2 #(.NUM_ELEMENTS(ACC_ELEMENTS*4),
                                   .BIT_LEN(ACC_BIT_LEN)
                                  )
             compressor_tree_3_to_2 (
