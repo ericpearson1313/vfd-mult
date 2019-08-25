@@ -1,0 +1,25 @@
+################################################################################
+# Copyright 2019 Eric Pearson
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+################################################################################
+
+Build A - base version from Supranational
+Build B - Area accurate version: 
+  Added: mult output shift register, and full adder to get the complete squared value, full residual luts (x4!), full adder (128 terms)
+
+Planned: Build C - acheive functionallity
+
+Planned: Build D - multicycle path timing
+
+Planned: Build E - multi-cycle funcitonallity
