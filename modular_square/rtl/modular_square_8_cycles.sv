@@ -175,13 +175,13 @@ module modular_square_8_cycles
    logic                     v7v6_overflow;
    logic                     v5v4_overflow;
    logic [LOOK_UP_WIDTH:0]   lut_addr0[ACC_ELEMENTS];
-   logic [BIT_LEN-1:0]       lut_data0[NUM_ELEMENTS][ACC_ELEMENTS];
+   reg   [BIT_LEN-1:0]       lut_data0[NUM_ELEMENTS][ACC_ELEMENTS];
    logic [LOOK_UP_WIDTH:0]   lut_addr1[ACC_ELEMENTS];
-   logic [BIT_LEN-1:0]       lut_data1[NUM_ELEMENTS][ACC_ELEMENTS];
+   wire  [BIT_LEN-1:0]       lut_data1[NUM_ELEMENTS][ACC_ELEMENTS];
    logic [LOOK_UP_WIDTH:0]   lut_addr2[ACC_ELEMENTS];
-   logic [BIT_LEN-1:0]       lut_data2[NUM_ELEMENTS][ACC_ELEMENTS];
+   reg   [BIT_LEN-1:0]       lut_data2[NUM_ELEMENTS][ACC_ELEMENTS];
    logic [LOOK_UP_WIDTH:0]   lut_addr3[ACC_ELEMENTS];
-   logic [BIT_LEN-1:0]       lut_data3[NUM_ELEMENTS][ACC_ELEMENTS];
+   wire  [BIT_LEN-1:0]       lut_data3[NUM_ELEMENTS][ACC_ELEMENTS];
 
    logic [ACC_BIT_LEN-1:0]   acc_stack[NUM_ELEMENTS][4*ACC_ELEMENTS + 
                                                      ACC_EXTRA_ELEMENTS];
@@ -584,10 +584,11 @@ module modular_square_8_cycles
          lut_addr3[k][LOOK_UP_WIDTH-1:0] = { 1'b1, reduced_grid_sum[k+96][(LOOK_UP_WIDTH*2)-1 : LOOK_UP_WIDTH]}; // MSB of upper words
       end
    end
-
+   
    // Instantiate memory holding reduction LUTs
    // TODO - remove reduction loading pins or drive them
    /* verilator lint_off PINMISSING */
+   wire lut_sel = curr_cycle[CYCLE_7];
    reduction_lut #(.REDUNDANT_ELEMENTS(REDUNDANT_ELEMENTS),
                    .NONREDUNDANT_ELEMENTS(NONREDUNDANT_ELEMENTS),
                    .NUM_SEGMENTS(NUM_SEGMENTS),
@@ -595,10 +596,10 @@ module modular_square_8_cycles
                   )
       reduction_lut_0 (
                      .clk(clk),
-                     .shift_high(1'b0), // lower
+                     .shift_high( lut_sel ), 
                      .shift_overflow(1'b00),
-                     .lut_addr(lut_addr0),
-                     .lut_data(lut_data0),
+                     .lut_addr( (lut_sel) ? lut_addr1 : lut_addr0 ),
+                     .lut_data(lut_data1),
                      .we(0)
                     );
    reduction_lut #(.REDUNDANT_ELEMENTS(REDUNDANT_ELEMENTS),
@@ -608,40 +609,19 @@ module modular_square_8_cycles
                   )
       reduction_lut_1 (
                      .clk(clk),
-                     .shift_high(1'b1), // Upper
+                     .shift_high( lut_sel ), // Upper
                      .shift_overflow(1'b0),
-                     .lut_addr(lut_addr1),
-                     .lut_data(lut_data1),
-                     .we(0)
-                    );
-   reduction_lut #(.REDUNDANT_ELEMENTS(REDUNDANT_ELEMENTS),
-                   .NONREDUNDANT_ELEMENTS(NONREDUNDANT_ELEMENTS),
-                   .NUM_SEGMENTS(NUM_SEGMENTS),
-                   .WORD_LEN(WORD_LEN)
-                  )
-      reduction_lut_2 (
-                     .clk(clk),
-                     .shift_high(1'b0), // Lower
-                     .shift_overflow(1'b0),
-                     .lut_addr(lut_addr2),
-                     .lut_data(lut_data2),
-                     .we(0)
-                    );
-   reduction_lut #(.REDUNDANT_ELEMENTS(REDUNDANT_ELEMENTS),
-                   .NONREDUNDANT_ELEMENTS(NONREDUNDANT_ELEMENTS),
-                   .NUM_SEGMENTS(NUM_SEGMENTS),
-                   .WORD_LEN(WORD_LEN)
-                  )
-      reduction_lut_3 (
-                     .clk(clk),
-                     .shift_high(1'b1), // Upper
-                     .shift_overflow(1'b0),
-                     .lut_addr(lut_addr3),
+                     .lut_addr( (lut_sel) ? lut_addr3 : lut_addr2),
                      .lut_data(lut_data3),
                      .we(0)
                     );
    /* verilator lint_on PINMISSING */
-
+   always_ff @(posedge clk) begin
+      if (curr_cycle[CYCLE_7]) begin
+         lut_data0 <= lut_data1;
+         lut_data2 <= lut_data3;       
+      end
+   end
    // Accumulate reduction lut values with running total
    always_comb begin
       for (int k=0; k<NUM_ELEMENTS; k=k+1) begin
