@@ -121,14 +121,14 @@ for i in range (LUT_NUM_ELEMENTS):
       f.write(hex(cur_v5v4)[2:].zfill(LUT_WIDTH // 4))
       f.write('\n')
 
-   # 256 entry table for V54
-   for j in range (LUT_SIZE):
+   # 512 entry table for V54 alone
+   for j in range (LUT_SIZE*2):
       cur_v5v4 = (t_v5v4 * j) % M
       f54.write(hex(cur_v5v4)[2:].zfill(LUT_WIDTH // 4))
       f54.write('\n')
 
-   # 256 entry table for V76
-   for j in range (LUT_SIZE):  
+   # 512 entry table for V76 alone
+   for j in range (LUT_SIZE*2):  
       cur_v7v6 = (t_v7v6 * j) % M
       f76.write(hex(cur_v7v6)[2:].zfill(LUT_WIDTH // 4))
       f76.write('\n')
