@@ -14,12 +14,16 @@
 # limitations under the License.
 ################################################################################
 
-`define BUILD_NUMBER B003
+`define BUILD_NUMBER C004
 
-//Build A - base version from Supranational
-//Build B - Area accurate version: 
+//Build phase A - base version from Supranational
+
+//Build phase B - Purpose: Area estimate, will it fit? 
 //  Added: mult output shift register, and full adder to get the complete squared value, full residual luts (x4!), full adder (128 terms)
 //  Added: B003 pipelined LUT output to divide luts in half.
-//Planned: Build C - acheive functionallity
-//Planned: Build D - multicycle path timing
+
+//Build phase C - Purpose: acheive functionallity without performance
+//  C004 : Detailed control and datapath. 6 lut, 205 input add
+
+//Planned: Build D - Purpose: Performance
 //Planned: Build E - multi-cycle funcitonallity
