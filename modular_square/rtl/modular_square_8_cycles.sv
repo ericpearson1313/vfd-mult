@@ -593,23 +593,23 @@ module reduction_lut_full
 
     )
    (
-    input  logic                    clk,
-    input  logic [LOOK_UP_WIDTH:0]  lut0_addr[LUT_NUM_ELEMENTS], // V54 [7:0]
-    input  logic [LOOK_UP_WIDTH:0]  lut1_addr[LUT_NUM_ELEMENTS], // V54 [15:8]
-    input  logic [LOOK_UP_WIDTH:0]  lut2_addr[LUT_NUM_ELEMENTS], // V76 [7:0]
-    input  logic [LOOK_UP_WIDTH:0]  lut3_addr[LUT_NUM_ELEMENTS], // V76 [15:8]
-    input  logic [0:0]              lut4_addr[LUT_NUM_ELEMENTS], // V54 [16] overflow bit
-    input  logic [0:0]              lut5_addr[LUT_NUM_ELEMENTS], // V76 [16] overflow bit
-    output logic [BIT_LEN-1:0]      lut0_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
-    output logic [BIT_LEN-1:0]      lut1_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
-    output logic [BIT_LEN-1:0]      lut2_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
-    output logic [BIT_LEN-1:0]      lut3_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
-    output logic [BIT_LEN-1:0]      lut4_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
-    output logic [BIT_LEN-1:0]      lut5_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
+    input  logic                     clk,
+    input  logic [LOOK_UP_WIDTH-1:0] lut0_addr[LUT_NUM_ELEMENTS], // V54 [7:0]
+    input  logic [LOOK_UP_WIDTH-1:0] lut1_addr[LUT_NUM_ELEMENTS], // V54 [15:8]
+    input  logic [LOOK_UP_WIDTH-1:0] lut2_addr[LUT_NUM_ELEMENTS], // V76 [7:0]
+    input  logic [LOOK_UP_WIDTH:0]   lut3_addr[LUT_NUM_ELEMENTS], // V76 [15:8]
+    input  logic [0:0]               lut4_addr[LUT_NUM_ELEMENTS], // V54 [16] overflow bit
+    input  logic [0:0]               lut5_addr[LUT_NUM_ELEMENTS], // V76 [16] overflow bit
+    output logic [BIT_LEN-1:0]       lut0_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
+    output logic [BIT_LEN-1:0]       lut1_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
+    output logic [BIT_LEN-1:0]       lut2_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
+    output logic [BIT_LEN-1:0]       lut3_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
+    output logic [BIT_LEN-1:0]       lut4_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
+    output logic [BIT_LEN-1:0]       lut5_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
 /* verilator lint_off UNUSED */
-    input                           we,
-    input [DIN_LEN-1:0]             din,
-    input                           din_valid
+    input                            we,
+    input [DIN_LEN-1:0]              din,
+    input                            din_valid
 /* verilator lint_on UNUSED */
    );
 
