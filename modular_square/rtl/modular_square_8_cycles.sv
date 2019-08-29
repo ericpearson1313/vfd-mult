@@ -471,8 +471,8 @@ module modular_square_8_cycles
          lut_addr1[k][LOOK_UP_WIDTH-1:0] = { reduced_grid_sum[k+64][(LOOK_UP_WIDTH*2)-1 : LOOK_UP_WIDTH]}; // MSB of lower words
          lut_addr2[k][LOOK_UP_WIDTH-1:0] = { reduced_grid_sum[k+96][ LOOK_UP_WIDTH-1    : 0            ]}; // LSB of Upper words
          lut_addr3[k][LOOK_UP_WIDTH-1:0] = { reduced_grid_sum[k+96][(LOOK_UP_WIDTH*2)-1 : LOOK_UP_WIDTH]}; // MSB of upper words
-         lut_addr4[k][LOOK_UP_WIDTH-1:0] = { reduced_grid_sum[k+64][(LOOK_UP_WIDTH*2)]};             // OVF of lower words
-         lut_addr5[k][LOOK_UP_WIDTH-1:0] = { reduced_grid_sum[k+96][(LOOK_UP_WIDTH*2)]};             // OVF of upper words
+         lut_addr4[k][0:0] = { reduced_grid_sum[k+64][(LOOK_UP_WIDTH*2)]};             // OVF of lower words
+         lut_addr5[k][0:0] = { reduced_grid_sum[k+96][(LOOK_UP_WIDTH*2)]};             // OVF of upper words
       end
    end
    
