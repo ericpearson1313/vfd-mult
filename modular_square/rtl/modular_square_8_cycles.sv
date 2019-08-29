@@ -517,8 +517,8 @@ module modular_square_8_cycles
                   )
       reduction_lut_ovf54 (
                      .clk(clk),
-                     .shift_high( lut_sel ), // Upper
-                     .shift_overflow(1'b0),
+                     .shift_high( 1'b0 ), 
+                     .shift_overflow(1'b1),
                      .lut_addr( lut_addr4 ),
                      .lut_data( lut_data4 ),
                      .we(0)
@@ -530,8 +530,8 @@ module modular_square_8_cycles
                   )
       reduction_lut_ovf76 (
                      .clk(clk),
-                     .shift_high( lut_sel ), // Upper
-                     .shift_overflow(1'b0),
+                     .shift_high( 1'b0 ),
+                     .shift_overflow(1'b1),
                      .lut_addr( lut_addr5 ),
                      .lut_data( lut_data5 ),
                      .we(0)
