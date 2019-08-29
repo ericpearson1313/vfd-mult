@@ -97,7 +97,11 @@ print ('reduction_lut_{0:03d}.dat'.format(LUT_NUM_ELEMENTS-1))
 
 for i in range (LUT_NUM_ELEMENTS):
    Filename = list('reduction_lut_{0:03d}.dat'.format(i))
+   Filename54 = list('reduction_lut_54_{0:03d}.dat'.format(i))
+   Filename76 = list('reduction_lut_76_{0:03d}.dat'.format(i))
    f = open(''.join(Filename), 'w')
+   f54 = open(''.join(Filename54), 'w')
+   f76 = open(''.join(Filename76), 'w')
 
    # Polynomial degree offset for V7V6
    offset = (SEGMENT_ELEMENTS*2)
@@ -117,7 +121,21 @@ for i in range (LUT_NUM_ELEMENTS):
       f.write(hex(cur_v5v4)[2:].zfill(LUT_WIDTH // 4))
       f.write('\n')
 
+   # 256 entry table for V54
+   for j in range (LUT_SIZE):
+      cur_v5v4 = (t_v5v4 * j) % M
+      f54.write(hex(cur_v5v4)[2:].zfill(LUT_WIDTH // 4))
+      f54.write('\n')
+
+   # 256 entry table for V76
+   for j in range (LUT_SIZE):  
+      cur_v7v6 = (t_v7v6 * j) % M
+      f76.write(hex(cur_v7v6)[2:].zfill(LUT_WIDTH // 4))
+      f76.write('\n')
+      
    f.close()
+   f54.close()
+   f76.close()
 
 ################################################################################
 # Generate RTL to read in files
