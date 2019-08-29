@@ -236,11 +236,7 @@ module modular_square_8_cycles
                next_cycle[CYCLE_7]         = 1'b1;
             end
             curr_cycle[CYCLE_7]: begin
-               next_cycle[CYCLE_8]         = 1'b1;
-            end
-            curr_cycle[CYCLE_8]: begin
                next_cycle[CYCLE_0]         = 1'b1;
-               out_valid                   = 1'b1;
             end
          endcase
       end
@@ -461,7 +457,7 @@ module modular_square_8_cycles
    end
    
    always_ff @(posedge clk) begin
-      if (curr_cycle[CYCLE_7]) begin
+      if (curr_cycle[CYCLE_6]) begin
          reduced_grid_reg <= reduced_grid_sum;
       end
    end
@@ -483,7 +479,7 @@ module modular_square_8_cycles
    // Instantiate memory holding reduction LUTs
    // TODO - remove reduction loading pins or drive them
    /* verilator lint_off PINMISSING */
-   wire lut_sel = curr_cycle[CYCLE_7];
+
    reduction_lut_full #(.REDUNDANT_ELEMENTS(REDUNDANT_ELEMENTS),
                    .NONREDUNDANT_ELEMENTS(NONREDUNDANT_ELEMENTS),
                    .NUM_SEGMENTS(NUM_SEGMENTS),
@@ -562,7 +558,7 @@ module modular_square_8_cycles
 
    // Flop output
    always_ff @(posedge clk) begin
-      if ( curr_cycle[CYCLE_8] ) begin
+      if ( curr_cycle[CYCLE_7] ) begin
         for (int k=0; k<(NUM_ELEMENTS); k=k+1) begin
             sq_out[k][BIT_LEN-1:0]      <= reduced_acc_sum[k][BIT_LEN-1:0];
         end
