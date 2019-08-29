@@ -14,7 +14,7 @@
 # limitations under the License.
 ################################################################################
 
-`define BUILD_NUMBER C004
+`define BUILD_NUMBER C005
 
 //Build phase A - base version from Supranational
 
@@ -23,7 +23,8 @@
 //  Added: B003 pipelined LUT output to divide luts in half.
 
 //Build phase C - Purpose: acheive functionallity without performance
-//  C004 : Detailed control and datapath. 6 lut, 205 input add
+//  C004 : Detailed control and datapath. 6 lut, 205 input add - extra luts passed limit (used 4K brams, instead of 2K brams and 2K and gates
+//  C005 : updated reduction lut gen to write out separate 256 entry tables for V54 and V76 separately, and add reduction lut full to do whole thing
 
 //Planned: Build D - Purpose: Performance
 //Planned: Build E - multi-cycle funcitonallity
