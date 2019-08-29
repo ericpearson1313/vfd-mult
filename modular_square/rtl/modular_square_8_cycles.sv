@@ -487,18 +487,18 @@ module modular_square_8_cycles
                   )
       reduction_lut_ (
                      .clk(clk),
-                     .lut_addr0( lut_addr0 ),
-                     .lut_addr1( lut_addr1 ),
-                     .lut_addr2( lut_addr2 ),
-                     .lut_addr3( lut_addr3 ),
-                     .lut_addr4( lut_addr4 ),
-                     .lut_addr5( lut_addr5 ),
-                     .lut_data0( lut_data0 ),
-                     .lut_data1( lut_data1 ),
-                     .lut_data2( lut_data2 ),
-                     .lut_data3( lut_data3 ),
-                     .lut_data4( lut_data4 ),
-                     .lut_data5( lut_data5 ),
+                     .lut0_addr( lut_addr0 ),
+                     .lut1_addr( lut_addr1 ),
+                     .lut2_addr( lut_addr2 ),
+                     .lut3_addr( lut_addr3 ),
+                     .lut4_addr( lut_addr4 ),
+                     .lut5_addr( lut_addr5 ),
+                     .lut0_data( lut_data0 ),
+                     .lut1_data( lut_data1 ),
+                     .lut2_data( lut_data2 ),
+                     .lut3_data( lut_data3 ),
+                     .lut4_data( lut_data4 ),
+                     .lut5_data( lut_data5 ),
                      .we(0)
                     );
    /* verilator lint_on PINMISSING */
