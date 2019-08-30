@@ -457,9 +457,7 @@ module modular_square_8_cycles
    end
    
    always_ff @(posedge clk) begin
-      if (curr_cycle[CYCLE_6]) begin
          reduced_grid_reg <= reduced_grid_sum;
-      end
    end
    
 
