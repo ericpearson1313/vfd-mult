@@ -158,7 +158,7 @@ module modular_square_8_cycles
 
 
 
-   logic [ACC_BIT_LEN-1:0]   acc_stack[NUM_ELEMENTS][3*2*SEGMENT_ELEMENTS+3*ACC_ELEMENTS+ACC_EXTRA_ELEMENTS];
+   logic [ACC_BIT_LEN-1:0]   acc_stack[NUM_ELEMENTS][2*2*SEGMENT_ELEMENTS+3*ACC_ELEMENTS+ACC_EXTRA_ELEMENTS];
    logic [ACC_BIT_LEN-1:0]   acc_C[NUM_ELEMENTS];
    logic [ACC_BIT_LEN-1:0]   acc_S[NUM_ELEMENTS];
 
