@@ -237,6 +237,7 @@ module modular_square_8_cycles
             end
             curr_cycle[CYCLE_7]: begin
                next_cycle[CYCLE_0]         = 1'b1;
+               out_valid                   = 1'b1;
             end
          endcase
       end
