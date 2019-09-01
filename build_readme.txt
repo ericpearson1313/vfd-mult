@@ -14,7 +14,7 @@
 # limitations under the License.
 ################################################################################
 
-`define BUILD_NUMBER C007
+`define BUILD_NUMBER C008
 
 //Build phase A - base version from Supranational
 
@@ -26,7 +26,8 @@
 //  C004 : Detailed control and datapath. 6 lut, 205 input add - extra luts passed limit (used 4K brams, instead of 2K brams and 2K and gates
 //  C005 : updated reduction lut gen to write out separate 256 entry tables for V54 and V76 separately, and add reduction lut full to do whole thing
 //  C006 : Fixed all build errors and restored out_valid.
-//  C007 : switch back to dual reduction lut (+2ns) for fit.
+//  C007 : switch back to dual reduction lut (+2ns) for fit., runs, 10ns, 9 cycle. not functional
+//  C008 : connect up missing prod acc inputs
 
 //Planned: Build D - Purpose: Performance
 //Planned: Build E - multi-cycle funcitonallity
