@@ -22,7 +22,7 @@
 //  Added: mult output shift register, and full adder to get the complete squared value, full residual luts (x4!), full adder (128 terms)
 //  Added: B003 pipelined LUT output to divide luts in half.
 
-//Build phase C - Purpose: acheive functionallity without performance
+//Build phase C - Purpose: acheive density & functionallity without performance
 //  C004 : Detailed control and datapath. 6 lut, 205 input add - extra luts passed limit (used 4K brams, instead of 2K brams and 2K and gates
 //  C005 : updated reduction lut gen to write out separate 256 entry tables for V54 and V76 separately, and add reduction lut full to do whole thing
 //  C006 : Fixed all build errors and restored out_valid.
