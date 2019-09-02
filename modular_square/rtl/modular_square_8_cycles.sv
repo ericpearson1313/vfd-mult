@@ -25,7 +25,7 @@ module modular_square_8_cycles
      parameter int BIT_LEN               = 17,
      parameter int WORD_LEN              = 16,
 
-     parameter int NUM_ELEMENTS          = ( REDUNDANT_ELEMENTS + NONREDUNDANT_ELEMENTS )
+     parameter int NUM_ELEMENTS          = ( REDUNDANT_ELEMENTS + NONREDUNDANT_ELEMENTS ) // 66 words
     )
    (
     input logic                   clk,
@@ -36,23 +36,21 @@ module modular_square_8_cycles
     output logic                  valid
    );
 
-   localparam int SEGMENT_ELEMENTS    = ( int'(NONREDUNDANT_ELEMENTS / NUM_SEGMENTS) );
-   localparam int MUL_NUM_ELEMENTS    = ( REDUNDANT_ELEMENTS + SEGMENT_ELEMENTS );
+   localparam int SEGMENT_ELEMENTS    = ( int'(NONREDUNDANT_ELEMENTS / NUM_SEGMENTS) ); // 64 elements of 17b for 1024 bits
+   localparam int MUL_NUM_ELEMENTS    = ( REDUNDANT_ELEMENTS + SEGMENT_ELEMENTS );      // 66 elements of 17b to keep 1024 safely
 
    localparam int EXTRA_ELEMENTS      = 2;
-   localparam int TWO_SEGMENTS        = ( (SEGMENT_ELEMENTS) + EXTRA_ELEMENTS + REDUNDANT_ELEMENTS );
-
    localparam int NUM_MULTIPLIERS     = 1;
    localparam int EXTRA_MUL_TREE_BITS = 11;  // 10 for CSA and 1 for 2x AB terms
-   localparam int MUL_BIT_LEN         = ( ((BIT_LEN*2) - WORD_LEN) + EXTRA_MUL_TREE_BITS );
-   localparam int GRID_BIT_LEN        =  MUL_BIT_LEN;
-   localparam int GRID_SIZE           = ( MUL_NUM_ELEMENTS*2 );
-   localparam int LOOK_UP_WIDTH       = ( int'(WORD_LEN / 2) );
+   localparam int MUL_BIT_LEN         = ( ((BIT_LEN*2) - WORD_LEN) + EXTRA_MUL_TREE_BITS ); // 29b
+   localparam int GRID_BIT_LEN        =  MUL_BIT_LEN; // 29b
+   localparam int GRID_SIZE           = ( MUL_NUM_ELEMENTS*2 ); // 132 elements in a 2K word
+   localparam int LOOK_UP_WIDTH       = ( int'(WORD_LEN / 2) ); // 8b Luts (also support 9 bits)
 
-   localparam int ACC_ELEMENTS        = (SEGMENT_ELEMENTS + 8);
+   localparam int ACC_ELEMENTS        = 36;  // 36 luts 
    localparam int ACC_EXTRA_ELEMENTS  = 1; // Addin the lower bits of the product
    localparam int ACC_EXTRA_BIT_LEN   = 12; // WAS: $clog2(ACC_ELEMENTS+ACC_EXTRA_ELEMENTS);
-   localparam int ACC_BIT_LEN         = ( BIT_LEN + ACC_EXTRA_BIT_LEN );
+   localparam int ACC_BIT_LEN         = ( BIT_LEN + ACC_EXTRA_BIT_LEN ); // 29b
 
    localparam int IDLE                = 0,
                   CYCLE_0             = 1,
@@ -80,8 +78,8 @@ module modular_square_8_cycles
    logic [BIT_LEN-1:0]       reduced_grid_sum[GRID_SIZE]; // 132 x 17b
    reg   [BIT_LEN-1:0]       reduced_grid_reg[GRID_SIZE]; // 132 x 17b
 
-   logic [LOOK_UP_WIDTH:0]   lut_addr0[ACC_ELEMENTS]; // 36 x 9b -- LBS8 of lower V54 words
-   logic [LOOK_UP_WIDTH:0]   lut_addr1[ACC_ELEMENTS]; // 36 x 9b -- MSB9 of lower V54 words
+   logic [LOOK_UP_WIDTH:0]   lut_addr0[ACC_ELEMENTS]; // 32 x 9b -- LBS8 of lower V54 words
+   logic [LOOK_UP_WIDTH:0]   lut_addr1[ACC_ELEMENTS]; // 32 x 9b -- MSB9 of lower V54 words
    logic [LOOK_UP_WIDTH:0]   lut_addr2[ACC_ELEMENTS]; // 36 x 9b -- LSB8 of Upper V76 words
    logic [LOOK_UP_WIDTH:0]   lut_addr3[ACC_ELEMENTS]; // 36 x 9b -- MSB9 of upper V76 words
    wire  [BIT_LEN-1:0]       lut_data0[NUM_ELEMENTS][ACC_ELEMENTS]; // 66 words (of 36 luts) of 17b
@@ -89,7 +87,7 @@ module modular_square_8_cycles
    wire  [BIT_LEN-1:0]       lut_data2[NUM_ELEMENTS][ACC_ELEMENTS];
    reg   [BIT_LEN-1:0]       lut_data3[NUM_ELEMENTS][ACC_ELEMENTS];
 
-   logic [ACC_BIT_LEN-1:0]   acc_stack[NUM_ELEMENTS][SEGMENT_ELEMENTS+ACC_ELEMENTS+ACC_EXTRA_ELEMENTS]; // 66 sumation columns, each of 137=64+72+1 of 29b
+   logic [ACC_BIT_LEN-1:0]   acc_stack[NUM_ELEMENTS][SEGMENT_ELEMENTS+2*ACC_ELEMENTS+ACC_EXTRA_ELEMENTS]; // 66 sumation columns, each of 137=64+72+1 of 29b
    logic [ACC_BIT_LEN-1:0]   acc_C[NUM_ELEMENTS]; // 66 words of 17+12=29b
    logic [ACC_BIT_LEN-1:0]   acc_S[NUM_ELEMENTS];
 
@@ -155,14 +153,14 @@ module modular_square_8_cycles
    end
 
    square #(.NUM_ELEMENTS( 66 ),
-              .BIT_LEN( 17 ),
-              .WORD_LEN( 16 )
+              .BIT_LEN(    17 ),
+              .WORD_LEN(   16 )
              )
       square_ (
                 .clk(clk),
                 .A( curr_sq_in ),
-                .Cout(mul_c),
-                .S(mul_s)
+                .C( mul_c ),
+                .S( mul_s )
                );
 
    // Carry propogate add each column in grid
@@ -197,26 +195,16 @@ module modular_square_8_cycles
    end
    
    // Instantiate memory holding reduction LUTs
-   // TODO - remove reduction loading pins or drive them
-   /* verilator lint_off PINMISSING */
-
-   dual_reduction_lut #(.REDUNDANT_ELEMENTS(REDUNDANT_ELEMENTS),
-                   .NONREDUNDANT_ELEMENTS(NONREDUNDANT_ELEMENTS),
-                   .NUM_SEGMENTS(NUM_SEGMENTS),
-                   .WORD_LEN(WORD_LEN)
-                  )
-      reduction_lut_ (
-                     .clk(clk),
+   dual_reduction_lut reduction_lut_ (
+                     .clk(clk), // Luts must be clocked
                      .shift_high(   curr_cycle[CYCLE_1] ),
                      .lut54_addr( ( curr_cycle[CYCLE_1] ) ? lut_addr1 : lut_addr0 ),
                      .lut76_addr( ( curr_cycle[CYCLE_1] ) ? lut_addr3 : lut_addr2 ),
                      .lut54_data( lut_data0 ),
-                     .lut76_data( lut_data2 ),
-                     .we(0)
+                     .lut76_data( lut_data2 )
                     );
-   /* verilator lint_on PINMISSING */
+
    // Accumulate reduction lut values with running total
-   
    always_ff @(posedge clk) begin
       if ( curr_cycle[CYCLE_2] ) begin
         lut_data1 <= lut_data0;
@@ -399,33 +387,23 @@ module dual_reduction_lut
    #(
      parameter int REDUNDANT_ELEMENTS    = 2,
      parameter int NONREDUNDANT_ELEMENTS = 64,
-     parameter int NUM_SEGMENTS          = 4,
+     parameter int NUM_SEGMENTS          = 1,
      parameter int WORD_LEN              = 16,
      parameter int BIT_LEN               = 17,
      parameter int DIN_LEN               = 8,
 
-     parameter int NUM_ELEMENTS          = REDUNDANT_ELEMENTS+
-                                           NONREDUNDANT_ELEMENTS,
+     parameter int NUM_ELEMENTS          = REDUNDANT_ELEMENTS+NONREDUNDANT_ELEMENTS,
      parameter int LOOK_UP_WIDTH         = int'(WORD_LEN / 2),
-     parameter int SEGMENT_ELEMENTS      = int'(NONREDUNDANT_ELEMENTS /
-                                                 NUM_SEGMENTS),
      parameter int EXTRA_ELEMENTS        = 2,
-     parameter int LUT_NUM_ELEMENTS      = REDUNDANT_ELEMENTS+EXTRA_ELEMENTS+
-                                           (SEGMENT_ELEMENTS*2)
-
+     parameter int LUT_NUM_ELEMENTS      = 36
     )
    (
     input  logic                     clk,
     input  logic                     shift_high,  // Applies to both LUTs
-    input  logic [LOOK_UP_WIDTH:0]   lut54_addr[LUT_NUM_ELEMENTS], // V54 [7:0]
-    input  logic [LOOK_UP_WIDTH:0]   lut76_addr[LUT_NUM_ELEMENTS], // V54 [16:8]
+    input  logic [LOOK_UP_WIDTH:0]   lut54_addr[LUT_NUM_ELEMENTS], // V54 32 x lsb [7:0], or msb[16:8]
+    input  logic [LOOK_UP_WIDTH:0]   lut76_addr[LUT_NUM_ELEMENTS], // V76 36 x lsb [7:0], or msb[16:8]
     output logic [BIT_LEN-1:0]       lut54_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
-    output logic [BIT_LEN-1:0]       lut76_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
-/* verilator lint_off UNUSED */
-    input                            we,
-    input [DIN_LEN-1:0]              din,
-    input                            din_valid
-/* verilator lint_on UNUSED */
+    output logic [BIT_LEN-1:0]       lut76_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS]
    );
 
    // 9 bit lookups
