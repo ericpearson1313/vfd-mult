@@ -14,7 +14,7 @@
 # limitations under the License.
 ################################################################################
 
-`define BUILD_NUMBER C009
+`define BUILD_NUMBER C010
 
 //Build phase A - base version from Supranational
 
@@ -28,7 +28,8 @@
 //  C006 : Fixed all build errors and restored out_valid.
 //  C007 : switch back to dual reduction lut (+2ns) for fit., runs, 10ns, 9 cycle. not functional
 //  C008 : connect up missing prod acc inputs
-//  C009 : try 10x multipliers :)
+//  C009 : try 10x multipliers :) 
+//  C010 : try single 1024bit square unit ~size of 8x multipliers.
 
 //Planned: Build D - Purpose: Performance
 //Planned: Build E - multi-cycle funcitonallity
