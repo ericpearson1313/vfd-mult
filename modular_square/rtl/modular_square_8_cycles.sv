@@ -44,7 +44,7 @@ module modular_square_8_cycles
    localparam int TWO_SEGMENTS        = ( (SEGMENT_ELEMENTS*2) + EXTRA_ELEMENTS + REDUNDANT_ELEMENTS );
    localparam int THREE_SEGMENTS      = ( (SEGMENT_ELEMENTS*3) + EXTRA_ELEMENTS + REDUNDANT_ELEMENTS );
 
-   localparam int NUM_MULTIPLIERS     = 2;
+   localparam int NUM_MULTIPLIERS     = 10;
    localparam int EXTRA_MUL_TREE_BITS = ( (BIT_LEN > WORD_LEN)         ?
                                            $clog2(MUL_NUM_ELEMENTS)    :
                                            $clog2(MUL_NUM_ELEMENTS*2) );
@@ -196,7 +196,7 @@ module modular_square_8_cycles
                mul_B_select[0]             = 2'b10;
                mul_A_select[1]             = 2'b11;
                mul_B_select[1]             = 2'b11;
-               next_cycle[CYCLE_1]         = 1'b1;
+               next_cycle[CYCLE_5]         = 1'b1;
             end
             curr_cycle[CYCLE_1]: begin
                mul_A_select[0]             = 2'b10;
@@ -278,35 +278,53 @@ module modular_square_8_cycles
 
    always_comb begin
       // Select multiplier input sources
-      for (int k=0; k<NUM_MULTIPLIERS; k=k+1) begin
          for (int l=0; l<SEGMENT_ELEMENTS; l=l+1) begin
-            unique case(mul_A_select[k])
-               2'b00: begin mul_A[k][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*0)+l][BIT_LEN-1:0]; end
-               2'b01: begin mul_A[k][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*1)+l][BIT_LEN-1:0]; end
-               2'b10: begin mul_A[k][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*2)+l][BIT_LEN-1:0]; end
-               2'b11: begin mul_A[k][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*3)+l][BIT_LEN-1:0]; end
-            endcase
-
-            unique case(mul_B_select[k])
-               2'b00: begin mul_B[k][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*0)+l][BIT_LEN-1:0]; end
-               2'b01: begin mul_B[k][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*1)+l][BIT_LEN-1:0]; end
-               2'b10: begin mul_B[k][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*2)+l][BIT_LEN-1:0]; end
-               2'b11: begin mul_B[k][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*3)+l][BIT_LEN-1:0]; end
-            endcase
+            // Multiplier output ( 9 .. 0 } = {DD CD DB CC CB DA BB CA AB AA)
+             mul_A[0][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*3)+l][BIT_LEN-1:0];
+             mul_B[0][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*3)+l][BIT_LEN-1:0];
+             mul_A[1][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*3)+l][BIT_LEN-1:0];
+             mul_B[1][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*2)+l][BIT_LEN-1:0];
+             mul_A[2][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*3)+l][BIT_LEN-1:0];
+             mul_B[2][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*1)+l][BIT_LEN-1:0];
+             mul_A[3][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*2)+l][BIT_LEN-1:0];
+             mul_B[3][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*2)+l][BIT_LEN-1:0];
+             mul_A[4][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*2)+l][BIT_LEN-1:0];
+             mul_B[4][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*1)+l][BIT_LEN-1:0];
+             mul_A[5][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*3)+l][BIT_LEN-1:0];
+             mul_B[5][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*0)+l][BIT_LEN-1:0];
+             mul_A[6][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*1)+l][BIT_LEN-1:0];
+             mul_B[6][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*1)+l][BIT_LEN-1:0];
+             mul_A[7][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*2)+l][BIT_LEN-1:0];
+             mul_B[7][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*0)+l][BIT_LEN-1:0];
+             mul_A[8][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*1)+l][BIT_LEN-1:0];
+             mul_B[8][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*0)+l][BIT_LEN-1:0];
+             mul_A[9][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*0)+l][BIT_LEN-1:0];
+             mul_B[9][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*0)+l][BIT_LEN-1:0];
          end
 
          // Redundant elements are only used as extension to highest element
-         for (int l=REDUNDANT_ELEMENTS; l>0; l=l-1) begin
-            mul_A[k][MUL_NUM_ELEMENTS-l][BIT_LEN-1:0] = '0;
-            mul_B[k][MUL_NUM_ELEMENTS-l][BIT_LEN-1:0] = '0;
-            if (mul_A_select[k] == 2'b11) begin
-               mul_A[k][MUL_NUM_ELEMENTS-l][BIT_LEN-1:0] = curr_sq_in[NUM_ELEMENTS-l][BIT_LEN-1:0];
-            end
-            if (mul_B_select[k] == 2'b11) begin
-               mul_B[k][MUL_NUM_ELEMENTS-l][BIT_LEN-1:0] = curr_sq_in[NUM_ELEMENTS-l][BIT_LEN-1:0];
-            end
+         for (int l=REDUNDANT_ELEMENTS; l<MUL_NUM_ELEMENTS; l=l+1) begin
+             mul_A[0][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*3)+l][BIT_LEN-1:0];
+             mul_B[0][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*3)+l][BIT_LEN-1:0];
+             mul_A[1][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*3)+l][BIT_LEN-1:0];
+             mul_B[1][l][BIT_LEN-1:0] = 0;
+             mul_A[2][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*3)+l][BIT_LEN-1:0];
+             mul_B[2][l][BIT_LEN-1:0] = 0;
+             mul_A[3][l][BIT_LEN-1:0] = 0;
+             mul_B[3][l][BIT_LEN-1:0] = 0;
+             mul_A[4][l][BIT_LEN-1:0] = 0;
+             mul_B[4][l][BIT_LEN-1:0] = 0;
+             mul_A[5][l][BIT_LEN-1:0] = curr_sq_in[(SEGMENT_ELEMENTS*3)+l][BIT_LEN-1:0];
+             mul_B[5][l][BIT_LEN-1:0] = 0;
+             mul_A[6][l][BIT_LEN-1:0] = 0;
+             mul_B[6][l][BIT_LEN-1:0] = 0;
+             mul_A[7][l][BIT_LEN-1:0] = 0;
+             mul_B[7][l][BIT_LEN-1:0] = 0;
+             mul_A[8][l][BIT_LEN-1:0] = 0;
+             mul_B[8][l][BIT_LEN-1:0] = 0;
+             mul_A[9][l][BIT_LEN-1:0] = 0;
+             mul_B[9][l][BIT_LEN-1:0] = 0;
          end
-      end
    end
 
    genvar i;
@@ -328,26 +346,6 @@ module modular_square_8_cycles
       end
    endgenerate
 
-   // Mul output shift register file to gather all results in parallel.
-   always_ff @(posedge clk) begin
-       if(  (curr_cycle[CYCLE_2] ||
-             curr_cycle[CYCLE_3] || 
-             curr_cycle[CYCLE_4] || 
-             curr_cycle[CYCLE_5] ) ) begin
-           mul_reg0_cout <= mul_cout;
-           mul_reg1_cout <= mul_reg0_cout;
-           mul_reg2_cout <= mul_reg1_cout;
-           mul_reg3_cout <= mul_reg2_cout;
-           mul_reg0_s    <= mul_s;
-           mul_reg1_s    <= mul_reg0_s;
-           mul_reg2_s    <= mul_reg1_s;
-           mul_reg3_s    <= mul_reg2_s;
-       end
-   end
-
-
-
-
    always_comb begin
       // Initialize grid for accumulating multiplier results across columns
       for (int k=0; k<GRID_SIZE; k=k+1) begin
@@ -358,6 +356,7 @@ module modular_square_8_cycles
       
       // place multiplier elements into proper grid locations
       // keep same order as orig 8 cycle mult
+      // Multiplier output ( 9 .. 0 } = {DD CD DB CC CB DA BB CA AB AA)
       // Multiplier output { 1, 0)
       // mul_reg3_s/cout = {DD,CD}, 
       // mul_reg2_s/cout = {DB,CC}, 
@@ -369,60 +368,60 @@ module modular_square_8_cycles
          if( k < ( SEGMENT_ELEMENTS * 2 ) ) begin // 32 word
              // Squared terms are not scaled by 2
              // AA is mul_s/cout[1] , no shift, start at offset 0, row 0123     
-             grid[SEGMENT_ELEMENTS*0 + k   ][12] = {{GRID_PAD        {1'b0}},      mul_cout[0][k][WORD_LEN-1   :0       ]};
-             grid[SEGMENT_ELEMENTS*0 + k+1 ][13] = {{GRID_PAD_CARRY  {1'b0}},      mul_cout[0][k][MUL_BIT_LEN-1:WORD_LEN]};
-             grid[SEGMENT_ELEMENTS*0 + k   ][14] = {{GRID_PAD        {1'b0}},      mul_s   [0][k][WORD_LEN-   1:0       ]};
-             grid[SEGMENT_ELEMENTS*0 + k+1 ][15] = {{GRID_PAD_CARRY  {1'b0}},      mul_s   [0][k][MUL_BIT_LEN-1:WORD_LEN]};               
+             grid[SEGMENT_ELEMENTS*0 + k   ][12] = {{GRID_PAD        {1'b0}}, mul_cout[0][k][WORD_LEN-1   :0       ]};
+             grid[SEGMENT_ELEMENTS*0 + k+1 ][13] = {{GRID_PAD_CARRY  {1'b0}}, mul_cout[0][k][MUL_BIT_LEN-1:WORD_LEN]};
+             grid[SEGMENT_ELEMENTS*0 + k   ][14] = {{GRID_PAD        {1'b0}}, mul_s   [0][k][WORD_LEN-   1:0       ]};
+             grid[SEGMENT_ELEMENTS*0 + k+1 ][15] = {{GRID_PAD_CARRY  {1'b0}}, mul_s   [0][k][MUL_BIT_LEN-1:WORD_LEN]};               
              // BB is mul_reg1_s/cout[1] , no shift, start at offset 2, row 4567     
-             grid[SEGMENT_ELEMENTS*2 + k   ][12] = {{GRID_PAD        {1'b0}}, mul_reg0_cout[1][k][WORD_LEN-1   :0       ]};
-             grid[SEGMENT_ELEMENTS*2 + k+1 ][13] = {{GRID_PAD_CARRY  {1'b0}}, mul_reg0_cout[1][k][MUL_BIT_LEN-1:WORD_LEN]};
-             grid[SEGMENT_ELEMENTS*2 + k   ][14] = {{GRID_PAD        {1'b0}}, mul_reg0_s   [1][k][WORD_LEN-   1:0       ]};
-             grid[SEGMENT_ELEMENTS*2 + k+1 ][15] = {{GRID_PAD_CARRY  {1'b0}}, mul_reg0_s   [1][k][MUL_BIT_LEN-1:WORD_LEN]};               
+             grid[SEGMENT_ELEMENTS*2 + k   ][12] = {{GRID_PAD        {1'b0}}, mul_cout[3][k][WORD_LEN-1   :0       ]};
+             grid[SEGMENT_ELEMENTS*2 + k+1 ][13] = {{GRID_PAD_CARRY  {1'b0}}, mul_cout[3][k][MUL_BIT_LEN-1:WORD_LEN]};
+             grid[SEGMENT_ELEMENTS*2 + k   ][14] = {{GRID_PAD        {1'b0}}, mul_s   [3][k][WORD_LEN-   1:0       ]};
+             grid[SEGMENT_ELEMENTS*2 + k+1 ][15] = {{GRID_PAD_CARRY  {1'b0}}, mul_s   [3][k][MUL_BIT_LEN-1:WORD_LEN]};               
              // CC is mul_reg2_s/cout[0] , no shift, start at offset 4, row 0123
-             grid[SEGMENT_ELEMENTS*4 + k   ][12] = {{GRID_PAD        {1'b0}}, mul_reg2_cout[0][k][WORD_LEN-1   :0       ]};
-             grid[SEGMENT_ELEMENTS*4 + k+1 ][13] = {{GRID_PAD_CARRY  {1'b0}}, mul_reg2_cout[0][k][MUL_BIT_LEN-1:WORD_LEN]};
-             grid[SEGMENT_ELEMENTS*4 + k   ][14] = {{GRID_PAD        {1'b0}}, mul_reg2_s   [0][k][WORD_LEN-   1:0       ]};
-             grid[SEGMENT_ELEMENTS*4 + k+1 ][15] = {{GRID_PAD_CARRY  {1'b0}}, mul_reg2_s   [0][k][MUL_BIT_LEN-1:WORD_LEN]};               
+             grid[SEGMENT_ELEMENTS*4 + k   ][12] = {{GRID_PAD        {1'b0}}, mul_cout[6][k][WORD_LEN-1   :0       ]};
+             grid[SEGMENT_ELEMENTS*4 + k+1 ][13] = {{GRID_PAD_CARRY  {1'b0}}, mul_cout[6][k][MUL_BIT_LEN-1:WORD_LEN]};
+             grid[SEGMENT_ELEMENTS*4 + k   ][14] = {{GRID_PAD        {1'b0}}, mul_s   [6][k][WORD_LEN-   1:0       ]};
+             grid[SEGMENT_ELEMENTS*4 + k+1 ][15] = {{GRID_PAD_CARRY  {1'b0}}, mul_s   [6][k][MUL_BIT_LEN-1:WORD_LEN]};               
              // All other products are scaled by 2 (left shift)
              // AB is      mul_s/cout[1] , shift, start at offset 1, row 0123
-             grid[SEGMENT_ELEMENTS*1 + k   ][ 0] = {{GRID_PAD        {1'b0}},      mul_cout[1][k][WORD_LEN-2   :0         ], 1'b0};
-             grid[SEGMENT_ELEMENTS*1 + k+1 ][ 1] = {{GRID_PAD_C_SHIFT{1'b0}},      mul_cout[1][k][MUL_BIT_LEN-1:WORD_LEN-1]};
-             grid[SEGMENT_ELEMENTS*1 + k   ][ 2] = {{GRID_PAD        {1'b0}},      mul_s   [1][k][WORD_LEN-2   :0         ], 1'b0};
-             grid[SEGMENT_ELEMENTS*1 + k+1 ][ 3] = {{GRID_PAD_C_SHIFT{1'b0}},      mul_s   [1][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+             grid[SEGMENT_ELEMENTS*1 + k   ][ 0] = {{GRID_PAD        {1'b0}}, mul_cout[1][k][WORD_LEN-2   :0         ], 1'b0};
+             grid[SEGMENT_ELEMENTS*1 + k+1 ][ 1] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_cout[1][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+             grid[SEGMENT_ELEMENTS*1 + k   ][ 2] = {{GRID_PAD        {1'b0}}, mul_s   [1][k][WORD_LEN-2   :0         ], 1'b0};
+             grid[SEGMENT_ELEMENTS*1 + k+1 ][ 3] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_s   [1][k][MUL_BIT_LEN-1:WORD_LEN-1]};
              // AC is mul_reg0_s/cout[0] , shift, start at offset 2, row 0123
-             grid[SEGMENT_ELEMENTS*2 + k   ][ 4] = {{GRID_PAD        {1'b0}}, mul_reg0_cout[0][k][WORD_LEN-2   :0         ], 1'b0};
-             grid[SEGMENT_ELEMENTS*2 + k+1 ][ 5] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_reg0_cout[0][k][MUL_BIT_LEN-1:WORD_LEN-1]};
-             grid[SEGMENT_ELEMENTS*2 + k   ][ 6] = {{GRID_PAD        {1'b0}}, mul_reg0_s   [0][k][WORD_LEN-2   :0         ], 1'b0};
-             grid[SEGMENT_ELEMENTS*2 + k+1 ][ 7] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_reg0_s   [0][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+             grid[SEGMENT_ELEMENTS*2 + k   ][ 4] = {{GRID_PAD        {1'b0}}, mul_cout[2][k][WORD_LEN-2   :0         ], 1'b0};
+             grid[SEGMENT_ELEMENTS*2 + k+1 ][ 5] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_cout[2][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+             grid[SEGMENT_ELEMENTS*2 + k   ][ 6] = {{GRID_PAD        {1'b0}}, mul_s   [2][k][WORD_LEN-2   :0         ], 1'b0};
+             grid[SEGMENT_ELEMENTS*2 + k+1 ][ 7] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_s   [2][k][MUL_BIT_LEN-1:WORD_LEN-1]};
              // BC is mul_reg1_s/cout[1] , shift, start at offset 3, row 4567
-             grid[SEGMENT_ELEMENTS*3 + k   ][ 8] = {{GRID_PAD        {1'b0}}, mul_reg1_cout[1][k][WORD_LEN-2   :0         ], 1'b0};
-             grid[SEGMENT_ELEMENTS*3 + k+1 ][ 9] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_reg1_cout[1][k][MUL_BIT_LEN-1:WORD_LEN-1]};
-             grid[SEGMENT_ELEMENTS*3 + k   ][10] = {{GRID_PAD        {1'b0}}, mul_reg1_s   [1][k][WORD_LEN-2   :0         ], 1'b0};
-             grid[SEGMENT_ELEMENTS*3 + k+1 ][11] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_reg1_s   [1][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+             grid[SEGMENT_ELEMENTS*3 + k   ][ 8] = {{GRID_PAD        {1'b0}}, mul_cout[5][k][WORD_LEN-2   :0         ], 1'b0};
+             grid[SEGMENT_ELEMENTS*3 + k+1 ][ 9] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_cout[5][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+             grid[SEGMENT_ELEMENTS*3 + k   ][10] = {{GRID_PAD        {1'b0}}, mul_s   [5][k][WORD_LEN-2   :0         ], 1'b0};
+             grid[SEGMENT_ELEMENTS*3 + k+1 ][11] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_s   [5][k][MUL_BIT_LEN-1:WORD_LEN-1]};
          end 
          // and the remaining are all 36 word connections
          // Squared terms are not scaled by 2
          // DD is mul_reg3_s/cout[1] , no shift, start at offset 6, row 4567
-         grid[SEGMENT_ELEMENTS*6 + k   ][12] = {{GRID_PAD        {1'b0}}, mul_reg3_cout[1][k][WORD_LEN-1   :0       ]};
-         grid[SEGMENT_ELEMENTS*6 + k+1 ][13] = {{GRID_PAD_CARRY  {1'b0}}, mul_reg3_cout[1][k][MUL_BIT_LEN-1:WORD_LEN]};
-         grid[SEGMENT_ELEMENTS*6 + k   ][14] = {{GRID_PAD        {1'b0}}, mul_reg3_s   [1][k][WORD_LEN-   1:0       ]};
-         grid[SEGMENT_ELEMENTS*6 + k+1 ][15] = {{GRID_PAD_CARRY  {1'b0}}, mul_reg3_s   [1][k][MUL_BIT_LEN-1:WORD_LEN]};               
+         grid[SEGMENT_ELEMENTS*6 + k   ][12] = {{GRID_PAD        {1'b0}}, mul_cout[9][k][WORD_LEN-1   :0       ]};
+         grid[SEGMENT_ELEMENTS*6 + k+1 ][13] = {{GRID_PAD_CARRY  {1'b0}}, mul_cout[9][k][MUL_BIT_LEN-1:WORD_LEN]};
+         grid[SEGMENT_ELEMENTS*6 + k   ][14] = {{GRID_PAD        {1'b0}}, mul_s   [9][k][WORD_LEN-   1:0       ]};
+         grid[SEGMENT_ELEMENTS*6 + k+1 ][15] = {{GRID_PAD_CARRY  {1'b0}}, mul_s   [9][k][MUL_BIT_LEN-1:WORD_LEN]};               
          // All other products are scaled by 2 (left shift)
          // AD is mul_reg1_s/cout[0] , shift, start at offset 3, row 0123
-         grid[SEGMENT_ELEMENTS*3 + k   ][ 0] = {{GRID_PAD        {1'b0}}, mul_reg1_cout[0][k][WORD_LEN-2   :0         ], 1'b0};
-         grid[SEGMENT_ELEMENTS*3 + k+1 ][ 1] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_reg1_cout[0][k][MUL_BIT_LEN-1:WORD_LEN-1]};
-         grid[SEGMENT_ELEMENTS*3 + k   ][ 2] = {{GRID_PAD        {1'b0}}, mul_reg1_s   [0][k][WORD_LEN-2   :0         ], 1'b0};
-         grid[SEGMENT_ELEMENTS*3 + k+1 ][ 3] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_reg1_s   [0][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+         grid[SEGMENT_ELEMENTS*3 + k   ][ 0] = {{GRID_PAD        {1'b0}}, mul_cout[4][k][WORD_LEN-2   :0         ], 1'b0};
+         grid[SEGMENT_ELEMENTS*3 + k+1 ][ 1] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_cout[4][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+         grid[SEGMENT_ELEMENTS*3 + k   ][ 2] = {{GRID_PAD        {1'b0}}, mul_s   [4][k][WORD_LEN-2   :0         ], 1'b0};
+         grid[SEGMENT_ELEMENTS*3 + k+1 ][ 3] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_s   [4][k][MUL_BIT_LEN-1:WORD_LEN-1]};
          // BD is mul_reg2_s/cout[1] , shift, start at offset 4, row 4567
-         grid[SEGMENT_ELEMENTS*4 + k   ][ 4] = {{GRID_PAD        {1'b0}}, mul_reg2_cout[1][k][WORD_LEN-2   :0         ], 1'b0};
-         grid[SEGMENT_ELEMENTS*4 + k+1 ][ 5] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_reg2_cout[1][k][MUL_BIT_LEN-1:WORD_LEN-1]};
-         grid[SEGMENT_ELEMENTS*4 + k   ][ 6] = {{GRID_PAD        {1'b0}}, mul_reg2_s   [1][k][WORD_LEN-2   :0         ], 1'b0};
-         grid[SEGMENT_ELEMENTS*4 + k+1 ][ 7] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_reg2_s   [1][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+         grid[SEGMENT_ELEMENTS*4 + k   ][ 4] = {{GRID_PAD        {1'b0}}, mul_cout[7][k][WORD_LEN-2   :0         ], 1'b0};
+         grid[SEGMENT_ELEMENTS*4 + k+1 ][ 5] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_cout[7][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+         grid[SEGMENT_ELEMENTS*4 + k   ][ 6] = {{GRID_PAD        {1'b0}}, mul_s   [7][k][WORD_LEN-2   :0         ], 1'b0};
+         grid[SEGMENT_ELEMENTS*4 + k+1 ][ 7] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_s   [7][k][MUL_BIT_LEN-1:WORD_LEN-1]};
          // CD is mul_reg3_s/cout[0] , shift, start at offset 5, row 0123
-         grid[SEGMENT_ELEMENTS*5 + k   ][ 8] = {{GRID_PAD        {1'b0}}, mul_reg3_cout[0][k][WORD_LEN-2   :0         ], 1'b0};
-         grid[SEGMENT_ELEMENTS*5 + k+1 ][ 9] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_reg3_cout[0][k][MUL_BIT_LEN-1:WORD_LEN-1]};
-         grid[SEGMENT_ELEMENTS*5 + k   ][10] = {{GRID_PAD        {1'b0}}, mul_reg3_s   [0][k][WORD_LEN-2   :0         ], 1'b0};
-         grid[SEGMENT_ELEMENTS*5 + k+1 ][11] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_reg3_s   [0][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+         grid[SEGMENT_ELEMENTS*5 + k   ][ 8] = {{GRID_PAD        {1'b0}}, mul_cout[8][k][WORD_LEN-2   :0         ], 1'b0};
+         grid[SEGMENT_ELEMENTS*5 + k+1 ][ 9] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_cout[8][k][MUL_BIT_LEN-1:WORD_LEN-1]};
+         grid[SEGMENT_ELEMENTS*5 + k   ][10] = {{GRID_PAD        {1'b0}}, mul_s   [8][k][WORD_LEN-2   :0         ], 1'b0};
+         grid[SEGMENT_ELEMENTS*5 + k+1 ][11] = {{GRID_PAD_C_SHIFT{1'b0}}, mul_s   [8][k][MUL_BIT_LEN-1:WORD_LEN-1]};
       end
    end
 
