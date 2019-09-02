@@ -89,7 +89,7 @@ module modular_square_8_cycles
    wire  [BIT_LEN-1:0]       lut_data2[NUM_ELEMENTS][ACC_ELEMENTS];
    reg   [BIT_LEN-1:0]       lut_data3[NUM_ELEMENTS][ACC_ELEMENTS];
 
-   logic [ACC_BIT_LEN-1:0]   acc_stack[NUM_ELEMENTS][SEGMENT_ELEMENTS+ACC_ELEMENTS+ACC_EXTRA_ELEMENTS]; // 66 sumation columns, each of 136=68*2 rows + 1, of 29b
+   logic [ACC_BIT_LEN-1:0]   acc_stack[NUM_ELEMENTS][SEGMENT_ELEMENTS+ACC_ELEMENTS+ACC_EXTRA_ELEMENTS]; // 66 sumation columns, each of 137=68*2+1 of 29b
    logic [ACC_BIT_LEN-1:0]   acc_C[NUM_ELEMENTS]; // 66 words of 17+12=29b
    logic [ACC_BIT_LEN-1:0]   acc_S[NUM_ELEMENTS];
 
@@ -229,17 +229,17 @@ module modular_square_8_cycles
          for (int j=0; j<ACC_ELEMENTS; j=j+1) begin
             if( j < SEGMENT_ELEMENTS ) begin
                 // V54[32]
-                acc_stack[k][j+0*SEGMENT_ELEMENTS][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data0[k][j][BIT_LEN-1:0]};
-                acc_stack[k][j+1*SEGMENT_ELEMENTS][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data1[k][j][BIT_LEN-1:0]};
+                acc_stack[k][j+  0][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data0[k][j][BIT_LEN-1:0]};
+                acc_stack[k][j+ 32][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data1[k][j][BIT_LEN-1:0]};
                 // V76[36]
-                acc_stack[k][j+2*SEGMENT_ELEMENTS+0*ACC_ELEMENTS][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data2[k][j][BIT_LEN-1:0]};
-                acc_stack[k][j+2*SEGMENT_ELEMENTS+1*ACC_ELEMENTS][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data3[k][j][BIT_LEN-1:0]};
+                acc_stack[k][j+ 64][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data2[k][j][BIT_LEN-1:0]};
+                acc_stack[k][j+100][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data3[k][j][BIT_LEN-1:0]};
             end else begin
-                acc_stack[k][j+2*SEGMENT_ELEMENTS+0*ACC_ELEMENTS][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data2[k][j][BIT_LEN-1:0]};
-                acc_stack[k][j+2*SEGMENT_ELEMENTS+1*ACC_ELEMENTS][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data3[k][j][BIT_LEN-1:0]};
+                acc_stack[k][j+ 64][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data2[k][j][BIT_LEN-1:0]};
+                acc_stack[k][j+100][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data3[k][j][BIT_LEN-1:0]};
             end
          end
-         acc_stack[k][2*SEGMENT_ELEMENTS+2*ACC_ELEMENTS][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, reduced_grid_reg[k][BIT_LEN-1:0]};
+         acc_stack[k][136][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, reduced_grid_reg[k][BIT_LEN-1:0]};
       end
    end
 
@@ -248,7 +248,7 @@ module modular_square_8_cycles
    
    generate
       for (i=0; i<NUM_ELEMENTS; i=i+1) begin : final_acc
-         compressor_tree_3_to_2 #(.NUM_ELEMENTS(2*SEGMENT_ELEMENTS+2*ACC_ELEMENTS+ACC_EXTRA_ELEMENTS),
+         compressor_tree_3_to_2 #(.NUM_ELEMENTS( 32*2+36*2+1 ), // V54 lsb, msb, V76 lsb, msb, V30
                                   .BIT_LEN(ACC_BIT_LEN)
                                  )
             compressor_tree_3_to_2 (
