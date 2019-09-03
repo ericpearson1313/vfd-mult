@@ -198,8 +198,8 @@ module modular_square_8_cycles
    // Instantiate memory holding reduction LUTs
    dual_reduction_lut reduction_lut_ (
                      .clk(clk), // Luts must be clocked
-                     .lut54_addr( ( curr_cycle[CYCLE_1] ) ? lut_addr1 : lut_addr0 ),
-                     .lut76_addr( ( curr_cycle[CYCLE_1] ) ? lut_addr3 : lut_addr2 ),
+                     .lut54_addr( ( curr_cycle[CYCLE_0] ) ? lut_addr1 : lut_addr0 ),
+                     .lut76_addr( ( curr_cycle[CYCLE_0] ) ? lut_addr3 : lut_addr2 ),
                      .lut54_lsb_data( lut_data0 ),
                      .lut76_lsb_data( lut_data2 ),
                      .lut54_msb_data( lut_data1_d ),
@@ -209,7 +209,7 @@ module modular_square_8_cycles
 
    // Accumulate reduction lut values with running total
    always_ff @(posedge clk) begin
-      if ( curr_cycle[CYCLE_2] ) begin
+      if ( curr_cycle[CYCLE_1] ) begin
         lut_data1 <= lut_data1_d;
         lut_data3 <= lut_data3_d;
       end
