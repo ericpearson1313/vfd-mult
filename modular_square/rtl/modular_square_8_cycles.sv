@@ -315,7 +315,7 @@ module square
             async_multiplier #(.A_BIT_LEN(BIT_LEN),
                          .B_BIT_LEN(BIT_LEN)
                         ) multiplier (
-                                      .clk(clk),
+                                      //.clk(clk),
                                       .A(A[x][BIT_LEN-1:0]),
                                       .B(A[y][BIT_LEN-1:0]),
                                       .P(mul_result[(NUM_ELEMENTS*y)+x])
