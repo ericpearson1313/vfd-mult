@@ -83,8 +83,10 @@ module modular_square_8_cycles
    logic [LOOK_UP_WIDTH:0]   lut_addr2[ACC_ELEMENTS]; // 36 x 9b -- LSB8 of Upper V76 words
    logic [LOOK_UP_WIDTH:0]   lut_addr3[ACC_ELEMENTS]; // 36 x 9b -- MSB9 of upper V76 words
    wire  [BIT_LEN-1:0]       lut_data0[NUM_ELEMENTS][ACC_ELEMENTS]; // 66 words (of 36 luts) of 17b
+   wire  [BIT_LEN-1:0]       lut_data1_d[NUM_ELEMENTS][ACC_ELEMENTS];
    reg   [BIT_LEN-1:0]       lut_data1[NUM_ELEMENTS][ACC_ELEMENTS];
    wire  [BIT_LEN-1:0]       lut_data2[NUM_ELEMENTS][ACC_ELEMENTS];
+   wire  [BIT_LEN-1:0]       lut_data3_d[NUM_ELEMENTS][ACC_ELEMENTS];
    reg   [BIT_LEN-1:0]       lut_data3[NUM_ELEMENTS][ACC_ELEMENTS];
 
    logic [ACC_BIT_LEN-1:0]   acc_stack[NUM_ELEMENTS][SEGMENT_ELEMENTS+2*ACC_ELEMENTS+ACC_EXTRA_ELEMENTS]; // 66 sumation columns, each of 137=64+72+1 of 29b
@@ -197,18 +199,20 @@ module modular_square_8_cycles
    // Instantiate memory holding reduction LUTs
    dual_reduction_lut reduction_lut_ (
                      .clk(clk), // Luts must be clocked
-                     .shift_high(   curr_cycle[CYCLE_1] ),
                      .lut54_addr( ( curr_cycle[CYCLE_1] ) ? lut_addr1 : lut_addr0 ),
                      .lut76_addr( ( curr_cycle[CYCLE_1] ) ? lut_addr3 : lut_addr2 ),
-                     .lut54_data( lut_data0 ),
-                     .lut76_data( lut_data2 )
+                     .lut54_lsb_data( lut_data0 ),
+                     .lut76_lsb_data( lut_data2 ),
+                     .lut54_msb_data( lut_data1_d ),
+                     .lut76_msb_data( lut_data3_d )
+                     
                     );
 
    // Accumulate reduction lut values with running total
    always_ff @(posedge clk) begin
       if ( curr_cycle[CYCLE_2] ) begin
-        lut_data1 <= lut_data0;
-        lut_data3 <= lut_data2;
+        lut_data1 <= lut_data1_d;
+        lut_data3 <= lut_data3_d;
       end
    end
    
@@ -399,11 +403,12 @@ module dual_reduction_lut
     )
    (
     input  logic                     clk,
-    input  logic                     shift_high,  // Applies to both LUTs
     input  logic [LOOK_UP_WIDTH:0]   lut54_addr[LUT_NUM_ELEMENTS], // V54 32 x lsb [7:0], or msb[16:8]
     input  logic [LOOK_UP_WIDTH:0]   lut76_addr[LUT_NUM_ELEMENTS], // V76 36 x lsb [7:0], or msb[16:8]
-    output logic [BIT_LEN-1:0]       lut54_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
-    output logic [BIT_LEN-1:0]       lut76_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS]
+    output logic [BIT_LEN-1:0]       lut54_lsb_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
+    output logic [BIT_LEN-1:0]       lut76_lsb_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
+    output logic [BIT_LEN-1:0]       lut54_msb_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
+    output logic [BIT_LEN-1:0]       lut76_msb_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS]
    );
 
    // 9 bit lookups
@@ -416,15 +421,10 @@ module dual_reduction_lut
    logic [LUT_WIDTH-1:0]  lut76_read_data[LUT_NUM_ELEMENTS];
    logic [LUT_WIDTH-1:0]  lut54_read_data_bram[NUM_BRAM];
    logic [LUT_WIDTH-1:0]  lut76_read_data_bram[NUM_BRAM];
-   logic [BIT_LEN-1:0]    lut54_output[NUM_ELEMENTS][LUT_NUM_ELEMENTS];
-   logic [BIT_LEN-1:0]    lut76_output[NUM_ELEMENTS][LUT_NUM_ELEMENTS];
-
-   // Delay to align with data from memory
-   logic shift_high_1d;
-
-   always_ff @(posedge clk) begin
-      shift_high_1d     <= shift_high;
-   end
+   logic [BIT_LEN-1:0]    lut54_lsb_output[NUM_ELEMENTS][LUT_NUM_ELEMENTS];
+   logic [BIT_LEN-1:0]    lut76_lsb_output[NUM_ELEMENTS][LUT_NUM_ELEMENTS];
+   logic [BIT_LEN-1:0]    lut54_msb_output[NUM_ELEMENTS][LUT_NUM_ELEMENTS];
+   logic [BIT_LEN-1:0]    lut76_msb_output[NUM_ELEMENTS][LUT_NUM_ELEMENTS];
 
    // Delay to align with data from memory
    (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_000[NUM_LUT_ENTRIES];
@@ -665,25 +665,24 @@ module dual_reduction_lut
       // default all outputs 
       for (int k=0; k<LUT_NUM_ELEMENTS; k=k+1) begin
          for (int l=0; l<NUM_ELEMENTS; l=l+1) begin
-            lut54_output[l][k] = '0;
-            lut76_output[l][k] = '0;
+            lut54_lsb_output[l][k] = '0;
+            lut76_lsb_output[l][k] = '0;
+            lut54_msb_output[l][k] = '0;
+            lut76_msb_output[l][k] = '0;
          end
       end
       for (int k=0; k<LUT_NUM_ELEMENTS; k=k+1) begin
          for (int l=0; l<NONREDUNDANT_ELEMENTS+1; l=l+1) begin
-            if (shift_high_1d) begin
-                if (l == 0) begin
-                   lut54_output[l][k][LOOK_UP_WIDTH-1:0] = '0;
-                   lut76_output[l][k][LOOK_UP_WIDTH-1:0] = '0;
-                end else begin
-                   lut54_output[l][k][LOOK_UP_WIDTH-1:0] = lut54_read_data[k][((l-1)*WORD_LEN)+LOOK_UP_WIDTH+:LOOK_UP_WIDTH];
-                   lut76_output[l][k][LOOK_UP_WIDTH-1:0] = lut76_read_data[k][((l-1)*WORD_LEN)+LOOK_UP_WIDTH+:LOOK_UP_WIDTH];
-                end
-            end else begin            
-              if (l < NONREDUNDANT_ELEMENTS) begin
-                   lut54_output[l][k] = {{(BIT_LEN-WORD_LEN){1'b0}}, lut54_read_data[k][(l*WORD_LEN)+:WORD_LEN]};
-                   lut76_output[l][k] = {{(BIT_LEN-WORD_LEN){1'b0}}, lut76_read_data[k][(l*WORD_LEN)+:WORD_LEN]};
-              end
+            if (l == 0) begin
+               lut54_msb_output[l][k][LOOK_UP_WIDTH-1:0] = '0;
+               lut76_msb_output[l][k][LOOK_UP_WIDTH-1:0] = '0;
+            end else begin
+               lut54_msb_output[l][k][LOOK_UP_WIDTH-1:0] = lut54_read_data[k][((l-1)*WORD_LEN)+LOOK_UP_WIDTH+:LOOK_UP_WIDTH];
+               lut76_msb_output[l][k][LOOK_UP_WIDTH-1:0] = lut76_read_data[k][((l-1)*WORD_LEN)+LOOK_UP_WIDTH+:LOOK_UP_WIDTH];
+            end
+            if (l < NONREDUNDANT_ELEMENTS) begin
+                 lut54_lsb_output[l][k] = {{(BIT_LEN-WORD_LEN){1'b0}}, lut54_read_data[k][(l*WORD_LEN)+:WORD_LEN]};
+                 lut76_lsb_output[l][k] = {{(BIT_LEN-WORD_LEN){1'b0}}, lut76_read_data[k][(l*WORD_LEN)+:WORD_LEN]};
             end
          end
       end
@@ -691,8 +690,10 @@ module dual_reduction_lut
 
    // Need above loops in combo block for Verilator to process
    always_comb begin
-      lut54_data  = lut54_output;
-      lut76_data  = lut76_output;
+      lut54_lsb_data  = lut54_lsb_output;
+      lut76_lsb_data  = lut76_lsb_output;
+      lut54_msb_data  = lut54_msb_output;
+      lut76_msb_data  = lut76_msb_output;
    end
 endmodule
 
