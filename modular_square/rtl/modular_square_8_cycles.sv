@@ -380,6 +380,30 @@ module square
    endgenerate
 endmodule
 
+module async_multiplier
+   #(
+     parameter int A_BIT_LEN       = 17,
+     parameter int B_BIT_LEN       = 17,
+
+     parameter int MUL_OUT_BIT_LEN = A_BIT_LEN + B_BIT_LEN
+    )
+   (
+    input  logic [A_BIT_LEN-1:0]       A,
+    input  logic [B_BIT_LEN-1:0]       B,
+    output logic [MUL_OUT_BIT_LEN-1:0] P
+   );
+
+   logic [MUL_OUT_BIT_LEN-1:0] P_result;
+
+   always_comb begin
+      P_result[MUL_OUT_BIT_LEN-1:0] = A[A_BIT_LEN-1:0] * B[B_BIT_LEN-1:0];
+   end
+
+   always_comb begin
+      P[MUL_OUT_BIT_LEN-1:0]  <= P_result[MUL_OUT_BIT_LEN-1:0];
+   end
+endmodule
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -696,26 +720,3 @@ module dual_reduction_lut
    end
 endmodule
 
-module async_multiplier
-   #(
-     parameter int A_BIT_LEN       = 17,
-     parameter int B_BIT_LEN       = 17,
-
-     parameter int MUL_OUT_BIT_LEN = A_BIT_LEN + B_BIT_LEN
-    )
-   (
-    input  logic [A_BIT_LEN-1:0]       A,
-    input  logic [B_BIT_LEN-1:0]       B,
-    output logic [MUL_OUT_BIT_LEN-1:0] P
-   );
-
-   logic [MUL_OUT_BIT_LEN-1:0] P_result;
-
-   always_comb begin
-      P_result[MUL_OUT_BIT_LEN-1:0] = A[A_BIT_LEN-1:0] * B[B_BIT_LEN-1:0];
-   end
-
-   always_comb begin
-      P[MUL_OUT_BIT_LEN-1:0]  <= P_result[MUL_OUT_BIT_LEN-1:0];
-   end
-endmodule
