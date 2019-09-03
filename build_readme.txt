@@ -14,7 +14,7 @@
 # limitations under the License.
 ################################################################################
 
-`define BUILD_NUMBER C010
+`define BUILD_NUMBER C011
 
 //Build phase A - base version from Supranational
 
@@ -30,6 +30,7 @@
 //  C008 : connect up missing prod acc inputs
 //  C009 : try 10x multipliers :) 
 //  C010 : try single 1024bit square unit ~size of 8x multipliers.
+//  C011 : remove reduction lut output muxing, async multiplies trial
 
 //Planned: Build D - Purpose: Performance
 //Planned: Build E - multi-cycle funcitonallity
