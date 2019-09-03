@@ -269,7 +269,7 @@ module modular_square_8_cycles
 
    // Flop output
    always_ff @(posedge clk) begin
-      if ( curr_cycle[CYCLE_3] ) begin
+      if ( curr_cycle[CYCLE_2] ) begin
         for (int k=0; k<(NUM_ELEMENTS); k=k+1) begin
             sq_out[k][BIT_LEN-1:0]      <= reduced_acc_sum[k][BIT_LEN-1:0];
         end
