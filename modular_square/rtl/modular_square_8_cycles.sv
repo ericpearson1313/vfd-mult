@@ -119,8 +119,7 @@ module modular_square_8_cycles
             end
             curr_cycle[CYCLE_0] : begin next_cycle[CYCLE_1] = 1'b1; end
             curr_cycle[CYCLE_1] : begin next_cycle[CYCLE_2] = 1'b1; end
-            curr_cycle[CYCLE_2] : begin next_cycle[CYCLE_3] = 1'b1; end
-            curr_cycle[CYCLE_3] : begin next_cycle[CYCLE_0] = 1'b1; out_valid = 1; end
+            curr_cycle[CYCLE_2] : begin next_cycle[CYCLE_0] = 1'b1; out_valid = 1; end
          endcase
       end
    end
@@ -159,7 +158,7 @@ module modular_square_8_cycles
               .WORD_LEN(   16 )
              )
       square_ (
-                .clk(clk),
+                .clk( clk ), // TODO: removed this unused port, and then restore again when pipelining the design
                 .A( curr_sq_in ),
                 .C( mul_c ),
                 .S( mul_s )
@@ -313,7 +312,7 @@ module square
    generate
       for (y=0; y<NUM_ELEMENTS; y=y+1) begin 
          for (x=y; x<NUM_ELEMENTS; x=x+1) begin // Diagonal matrix
-            multiplier #(.A_BIT_LEN(BIT_LEN),
+            async_multiplier #(.A_BIT_LEN(BIT_LEN),
                          .B_BIT_LEN(BIT_LEN)
                         ) multiplier (
                                       .clk(clk),
@@ -697,3 +696,26 @@ module dual_reduction_lut
    end
 endmodule
 
+module async_multiplier
+   #(
+     parameter int A_BIT_LEN       = 17,
+     parameter int B_BIT_LEN       = 17,
+
+     parameter int MUL_OUT_BIT_LEN = A_BIT_LEN + B_BIT_LEN
+    )
+   (
+    input  logic [A_BIT_LEN-1:0]       A,
+    input  logic [B_BIT_LEN-1:0]       B,
+    output logic [MUL_OUT_BIT_LEN-1:0] P
+   );
+
+   logic [MUL_OUT_BIT_LEN-1:0] P_result;
+
+   always_comb begin
+      P_result[MUL_OUT_BIT_LEN-1:0] = A[A_BIT_LEN-1:0] * B[B_BIT_LEN-1:0];
+   end
+
+   always_comb begin
+      P[MUL_OUT_BIT_LEN-1:0]  <= P_result[MUL_OUT_BIT_LEN-1:0];
+   end
+endmodule
