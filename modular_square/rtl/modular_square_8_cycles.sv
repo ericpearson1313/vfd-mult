@@ -54,10 +54,7 @@ module modular_square_8_cycles
 
    localparam int IDLE                = 0,
                   CYCLE_0             = 1,
-                  CYCLE_1             = 2,
-                  CYCLE_2             = 3,
-                  CYCLE_3             = 4,
-                  NUM_CYCLES          = 5;
+                  NUM_CYCLES          = 2;
 
    // Flop incoming data from external source
    logic [BIT_LEN-1:0]       sq_in_d1[NUM_ELEMENTS];  // 66 x 17b
@@ -118,9 +115,7 @@ module modular_square_8_cycles
                   next_cycle[IDLE]         = 1'b1;
                end
             end
-            curr_cycle[CYCLE_0] : begin next_cycle[CYCLE_1] = 1'b1; end
-            curr_cycle[CYCLE_1] : begin next_cycle[CYCLE_2] = 1'b1; end
-            curr_cycle[CYCLE_2] : begin next_cycle[CYCLE_0] = 1'b1; out_valid = 1; end
+            curr_cycle[CYCLE_0] : begin next_cycle[CYCLE_0] = 1'b1; out_valid = 1; end
          endcase
       end
    end
@@ -236,8 +231,8 @@ module modular_square_8_cycles
             acc_stack[k][j+168][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data5[k][j][BIT_LEN-1:0]};
          end
       end
-      // V30 has 32 entries (as all other bits go into modulus calc
-      for (int k=0; k<NUM_ELEMENTS; k=k+1) begin
+      // V30 has 32 entries (as all other bits go into modulus calc) and only the 64 words are used
+      for (int k=0; k<NONREDUNDANT_ELEMENTS; k=k+1) begin
          acc_stack[k][204][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, reduced_grid_sum[k][BIT_LEN-1:0]};
       end
    end
@@ -275,12 +270,10 @@ module modular_square_8_cycles
                                {{(BIT_LEN-(ACC_BIT_LEN-WORD_LEN))-1{1'b0}}, acc_sum[NUM_ELEMENTS-2][ACC_BIT_LEN:WORD_LEN]};
    end
 
-   // Flop output
+   // Always Flop output
    always_ff @(posedge clk) begin
-      if ( curr_cycle[CYCLE_2] ) begin
-        for (int k=0; k<(NUM_ELEMENTS); k=k+1) begin
-            sq_out[k][BIT_LEN-1:0]      <= reduced_acc_sum[k][BIT_LEN-1:0];
-        end
+      for (int k=0; k<(NUM_ELEMENTS); k=k+1) begin
+          sq_out[k][BIT_LEN-1:0]      <= reduced_acc_sum[k][BIT_LEN-1:0];
       end
    end
 endmodule
