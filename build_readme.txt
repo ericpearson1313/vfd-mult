@@ -14,7 +14,7 @@
 # limitations under the License.
 ################################################################################
 
-`define BUILD_NUMBER C011
+`define BUILD_NUMBER C012
 
 //Build phase A - base version from Supranational
 
@@ -29,8 +29,9 @@
 //  C007 : switch back to dual reduction lut (+2ns) for fit., runs, 10ns, 9 cycle. not functional
 //  C008 : connect up missing prod acc inputs
 //  C009 : try 10x multipliers :) 
-//  C010 : try single 1024bit square unit ~size of 8x multipliers.
-//  C011 : remove reduction lut output muxing, async multiplies trial
+//  C010 : try single 1024bit square unit ~size of 8x multipliers. (compiled ok)
+//  C011 : remove reduction lut output muxing, async multiplies trial (clock too slow)
+//  C012 : change to async lutram (clock will be very slow, but lets see)
 
 //Planned: Build D - Purpose: Performance
 //Planned: Build E - multi-cycle funcitonallity
