@@ -41,7 +41,7 @@ module modular_square_8_cycles
 
    localparam int EXTRA_ELEMENTS      = 2;
    localparam int NUM_MULTIPLIERS     = 1;
-   localparam int EXTRA_MUL_TREE_BITS = 11;  // 10 for CSA and 1 for 2x AB terms
+   localparam int EXTRA_MUL_TREE_BITS = 8;  // 7 for CSA of 66 and 1 for 2x AB terms
    localparam int MUL_BIT_LEN         = ( ((BIT_LEN*2) - WORD_LEN) + EXTRA_MUL_TREE_BITS ); // 29b
    localparam int GRID_BIT_LEN        =  MUL_BIT_LEN; // 29b
    localparam int GRID_SIZE           = ( MUL_NUM_ELEMENTS*2 ); // 132 elements in a 2K word
@@ -49,7 +49,7 @@ module modular_square_8_cycles
 
    localparam int ACC_ELEMENTS        = 36;  // 36 luts 
    localparam int ACC_EXTRA_ELEMENTS  = 1; // Addin the lower bits of the product
-   localparam int ACC_EXTRA_BIT_LEN   = 12; // WAS: $clog2(ACC_ELEMENTS+ACC_EXTRA_ELEMENTS);
+   localparam int ACC_EXTRA_BIT_LEN   = 8; // WAS: $clog2(ACC_ELEMENTS+ACC_EXTRA_ELEMENTS);
    localparam int ACC_BIT_LEN         = ( BIT_LEN + ACC_EXTRA_BIT_LEN ); // 29b
 
    localparam int IDLE                = 0,
