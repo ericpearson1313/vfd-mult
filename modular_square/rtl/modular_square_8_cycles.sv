@@ -200,10 +200,10 @@ module modular_square_8_cycles
                      .lut76_msb_addr( lut_addr5 ),
                      .lut54_lsb_data( lut_data0 ), // use 32 luts
                      .lut54_csb_data( lut_data1 ), // use 32 luts
-                     .lut54_msb_data( lut_data1 ), // use 32 luts
-                     .lut76_lsb_data( lut_data2 ), // 36 luts
-                     .lut76_csb_data( lut_data1 ), // 36 luts
-                     .lut76_msb_data( lut_data3 )  // 36 luts
+                     .lut54_msb_data( lut_data2 ), // use 32 luts
+                     .lut76_lsb_data( lut_data3 ), // 36 luts
+                     .lut76_csb_data( lut_data4 ), // 36 luts
+                     .lut76_msb_data( lut_data5 )  // 36 luts
                      
                     );
 
