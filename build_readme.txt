@@ -14,7 +14,7 @@
 # limitations under the License.
 ################################################################################
 
-`define BUILD_NUMBER C012
+`define BUILD_NUMBER C013
 
 //Build phase A - base version from Supranational
 
@@ -32,6 +32,7 @@
 //  C010 : try single 1024bit square unit ~size of 8x multipliers. (compiled ok)
 //  C011 : remove reduction lut output muxing, async multiplies trial (clock too slow)
 //  C012 : change to async lutram (clock will be very slow, but lets see)
+//  C013 : fixup lut shifted outputs
 
 //Planned: Build D - Purpose: Performance
 //Planned: Build E - multi-cycle funcitonallity
