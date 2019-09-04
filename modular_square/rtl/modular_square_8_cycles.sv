@@ -982,8 +982,8 @@ module full_reduction_lut
          lut54_csb_output[0][k][16:0] = { 1'b0, lut54_csb_read_data[k][9:0], 6'b000000};
          lut76_csb_output[0][k][16:0] = { 1'b0, lut76_csb_read_data[k][9:0], 6'b000000};
          for (int l=1; l<64; l=l+1) begin
-            lut54_csb_output[l][k][16:0] = { 1'b0, lut54_csb_read_data[k][(l*WORD_LEN)+9+:WORD_LEN] };
-            lut76_csb_output[l][k][16:0] = { 1'b0, lut76_csb_read_data[k][(l*WORD_LEN)+9+:WORD_LEN] };
+            lut54_csb_output[l][k][16:0] = { 1'b0, lut54_csb_read_data[k][(l*WORD_LEN)-6 +: WORD_LEN] };
+            lut76_csb_output[l][k][16:0] = { 1'b0, lut76_csb_read_data[k][(l*WORD_LEN)-6 +: WORD_LEN] };
          end
          lut54_csb_output[64][k][16:0] = {11'b0, lut54_csb_read_data[k][1023:1018] };
          lut76_csb_output[64][k][16:0] = {11'b0, lut76_csb_read_data[k][1023:1018] };
@@ -991,15 +991,15 @@ module full_reduction_lut
          lut54_msb_output[0][k][16:0] = {1'b0, lut54_msb_read_data[k][3:0], 12'b000000};
          lut76_msb_output[0][k][16:0] = {1'b0, lut76_msb_read_data[k][3:0], 12'b000000};
          for (int l=1; l<64; l=l+1) begin
-            lut54_msb_output[l][k][16:0] = {1'b0, lut54_msb_read_data[k][(l*WORD_LEN)+3+:WORD_LEN] };
-            lut76_msb_output[l][k][16:0] = {1'b0, lut76_msb_read_data[k][(l*WORD_LEN)+3+:WORD_LEN] };
+            lut54_msb_output[l][k][16:0] = {1'b0, lut54_msb_read_data[k][(l*WORD_LEN)-12 +: WORD_LEN] };
+            lut76_msb_output[l][k][16:0] = {1'b0, lut76_msb_read_data[k][(l*WORD_LEN)-12 +: WORD_LEN] };
          end
          lut54_msb_output[64][k][16:0] = {5'b0, lut54_msb_read_data[k][1023:1012]};
          lut76_msb_output[64][k][16:0] = {5'b0, lut76_msb_read_data[k][1023:1012]};
             
          for (int l=0; l<64; l=l+1) begin
-            lut54_lsb_output[l][k][16:0] = {1'b0, lut54_lsb_read_data[k][(l*WORD_LEN)+:WORD_LEN]};
-            lut76_lsb_output[l][k][16:0] = {1'b0, lut76_lsb_read_data[k][(l*WORD_LEN)+:WORD_LEN]};
+            lut54_lsb_output[l][k][16:0] = {1'b0, lut54_lsb_read_data[k][(l*WORD_LEN)-0 +: WORD_LEN]};
+            lut76_lsb_output[l][k][16:0] = {1'b0, lut76_lsb_read_data[k][(l*WORD_LEN)-0 +: WORD_LEN]};
          end   
 
       end
