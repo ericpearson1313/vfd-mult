@@ -45,7 +45,7 @@ module modular_square_8_cycles
    localparam int MUL_BIT_LEN         = ( ((BIT_LEN*2) - WORD_LEN) + EXTRA_MUL_TREE_BITS ); // 29b
    localparam int GRID_BIT_LEN        =  MUL_BIT_LEN; // 29b
    localparam int GRID_SIZE           = ( MUL_NUM_ELEMENTS*2 ); // 132 elements in a 2K word
-   localparam int LOOK_UP_WIDTH       = ( int'(WORD_LEN / 2) ); // 8b Luts (also support 9 bits)
+   localparam int LOOK_UP_WIDTH       = 6;
 
    localparam int ACC_ELEMENTS        = 36;  // 36 luts 
    localparam int ACC_EXTRA_ELEMENTS  = 1; // Addin the lower bits of the product
@@ -76,20 +76,21 @@ module modular_square_8_cycles
 
    logic [GRID_BIT_LEN:0]    grid_sum[GRID_SIZE]; // 132 x 30b 
    logic [BIT_LEN-1:0]       reduced_grid_sum[GRID_SIZE]; // 132 x 17b
-   reg   [BIT_LEN-1:0]       reduced_grid_reg[GRID_SIZE]; // 132 x 17b
 
-   logic [LOOK_UP_WIDTH:0]   lut_addr0[ACC_ELEMENTS]; // 32 x 9b -- LBS8 of lower V54 words
-   logic [LOOK_UP_WIDTH:0]   lut_addr1[ACC_ELEMENTS]; // 32 x 9b -- MSB9 of lower V54 words
-   logic [LOOK_UP_WIDTH:0]   lut_addr2[ACC_ELEMENTS]; // 36 x 9b -- LSB8 of Upper V76 words
-   logic [LOOK_UP_WIDTH:0]   lut_addr3[ACC_ELEMENTS]; // 36 x 9b -- MSB9 of upper V76 words
-   wire  [BIT_LEN-1:0]       lut_data0[NUM_ELEMENTS][ACC_ELEMENTS]; // 66 words (of 36 luts) of 17b
-   wire  [BIT_LEN-1:0]       lut_data1_d[NUM_ELEMENTS][ACC_ELEMENTS];
-   reg   [BIT_LEN-1:0]       lut_data1[NUM_ELEMENTS][ACC_ELEMENTS];
-   wire  [BIT_LEN-1:0]       lut_data2[NUM_ELEMENTS][ACC_ELEMENTS];
-   wire  [BIT_LEN-1:0]       lut_data3_d[NUM_ELEMENTS][ACC_ELEMENTS];
-   reg   [BIT_LEN-1:0]       lut_data3[NUM_ELEMENTS][ACC_ELEMENTS];
+   logic [LOOK_UP_WIDTH-1:0] lut_addr0[ACC_ELEMENTS]; // 32 x 9b -- LBS6 of lower V54 words
+   logic [LOOK_UP_WIDTH-1:0] lut_addr1[ACC_ELEMENTS]; // 32 x 9b -- CSB6 of lower V54 words
+   logic [LOOK_UP_WIDTH-1:0] lut_addr2[ACC_ELEMENTS]; // 32 x 9b -- MSB5 of lower V54 words
+   logic [LOOK_UP_WIDTH-1:0] lut_addr3[ACC_ELEMENTS]; // 36 x 9b -- LSB6 of Upper V76 words
+   logic [LOOK_UP_WIDTH-1:0] lut_addr4[ACC_ELEMENTS]; // 36 x 9b -- CSB6 of upper V76 words
+   logic [LOOK_UP_WIDTH-1:0] lut_addr5[ACC_ELEMENTS]; // 36 x 9b -- MSB5 of upper V76 words
+   logic [BIT_LEN-1:0]       lut_data0[NUM_ELEMENTS][ACC_ELEMENTS]; // 66 words (of 36 luts) of 17b
+   logic [BIT_LEN-1:0]       lut_data1[NUM_ELEMENTS][ACC_ELEMENTS]; // 66 words (of 36 luts) of 17b
+   logic [BIT_LEN-1:0]       lut_data2[NUM_ELEMENTS][ACC_ELEMENTS]; // 66 words (of 36 luts) of 17b
+   logic [BIT_LEN-1:0]       lut_data3[NUM_ELEMENTS][ACC_ELEMENTS]; // 66 words (of 36 luts) of 17b
+   logic [BIT_LEN-1:0]       lut_data4[NUM_ELEMENTS][ACC_ELEMENTS]; // 66 words (of 36 luts) of 17b
+   logic [BIT_LEN-1:0]       lut_data5[NUM_ELEMENTS][ACC_ELEMENTS]; // 66 words (of 36 luts) of 17b
 
-   logic [ACC_BIT_LEN-1:0]   acc_stack[NUM_ELEMENTS][SEGMENT_ELEMENTS+2*ACC_ELEMENTS+ACC_EXTRA_ELEMENTS]; // 66 sumation columns, each of 137=64+72+1 of 29b
+   logic [ACC_BIT_LEN-1:0]   acc_stack[NUM_ELEMENTS][205]; // 66 sumation columns, each of 205=3*32+3*36+1 of 29b
    logic [ACC_BIT_LEN-1:0]   acc_C[NUM_ELEMENTS]; // 66 words of 17+12=29b
    logic [ACC_BIT_LEN-1:0]   acc_S[NUM_ELEMENTS];
 
@@ -180,57 +181,64 @@ module modular_square_8_cycles
       reduced_grid_sum[GRID_SIZE-1] = grid_sum[GRID_SIZE-1][BIT_LEN-1:0] +
                                {{(BIT_LEN-(GRID_BIT_LEN-WORD_LEN))-1{1'b0}}, grid_sum[GRID_SIZE-2][GRID_BIT_LEN:WORD_LEN]};
    end
-   
-   always_ff @(posedge clk) begin
-         reduced_grid_reg <= reduced_grid_sum;
-   end
-   
+ 
    // Set values for which segments to lookup in reduction LUTs
    always_comb begin
       for (int k=0; k<ACC_ELEMENTS; k=k+1) begin
-         lut_addr0[k][LOOK_UP_WIDTH:0] = { 1'b0, reduced_grid_sum[k+64][ LOOK_UP_WIDTH-1    : 0            ]}; // LBS8 of lower V54 words
-         lut_addr1[k][LOOK_UP_WIDTH:0] = {       reduced_grid_sum[k+64][(LOOK_UP_WIDTH*2)   : LOOK_UP_WIDTH]}; // MSB9 of lower V54 words
-         lut_addr2[k][LOOK_UP_WIDTH:0] = { 1'b0, reduced_grid_sum[k+96][ LOOK_UP_WIDTH-1    : 0            ]}; // LSB8 of Upper V76 words
-         lut_addr3[k][LOOK_UP_WIDTH:0] = {       reduced_grid_sum[k+96][(LOOK_UP_WIDTH*2)   : LOOK_UP_WIDTH]}; // MSB9 of upper V76 words
+         lut_addr0[k][LOOK_UP_WIDTH-1:0] = {       reduced_grid_sum[k+64][ 5: 0]}; // LBS6 of lower V54 words
+         lut_addr1[k][LOOK_UP_WIDTH-1:0] = {       reduced_grid_sum[k+64][11: 6]}; // CSB6 of lower V54 words
+         lut_addr2[k][LOOK_UP_WIDTH-1:0] = { 1'b0, reduced_grid_sum[k+64][16:12]}; // MSB5 of lower V54 words
+         lut_addr3[k][LOOK_UP_WIDTH-1:0] = {       reduced_grid_sum[k+96][ 5: 0]}; // LSB6 of Upper V76 words
+         lut_addr4[k][LOOK_UP_WIDTH-1:0] = {       reduced_grid_sum[k+96][11: 6]}; // CSB6 of upper V76 words
+         lut_addr5[k][LOOK_UP_WIDTH-1:0] = { 1'b0, reduced_grid_sum[k+96][16:12]}; // MSB5 of upper V76 words
       end
    end
    
    // Instantiate memory holding reduction LUTs
-   dual_reduction_lut reduction_lut_ (
-                     .clk(clk), // Luts must be clocked
-                     .lut54_addr( ( curr_cycle[CYCLE_0] ) ? lut_addr1 : lut_addr0 ),
-                     .lut76_addr( ( curr_cycle[CYCLE_0] ) ? lut_addr3 : lut_addr2 ),
-                     .lut54_lsb_data( lut_data0 ),
-                     .lut76_lsb_data( lut_data2 ),
-                     .lut54_msb_data( lut_data1_d ),
-                     .lut76_msb_data( lut_data3_d )
+   full_reduction_lut reduction_lut_ (
+                     //.clk(clk), // brams must be clocked, but not lutrams :)
+                     .lut54_lsb_addr( lut_addr0 ),
+                     .lut54_csb_addr( lut_addr1 ),
+                     .lut54_msb_addr( lut_addr2 ),
+                     .lut76_lsb_addr( lut_addr3 ),
+                     .lut76_csb_addr( lut_addr4 ),
+                     .lut76_msb_addr( lut_addr5 ),
+                     .lut54_lsb_data( lut_data0 ), // use 32 luts
+                     .lut54_csb_data( lut_data1 ), // use 32 luts
+                     .lut54_msb_data( lut_data1 ), // use 32 luts
+                     .lut76_lsb_data( lut_data2 ), // 36 luts
+                     .lut76_csb_data( lut_data1 ), // 36 luts
+                     .lut76_msb_data( lut_data3 )  // 36 luts
                      
                     );
 
-   // Accumulate reduction lut values with running total
-   always_ff @(posedge clk) begin
-      if ( curr_cycle[CYCLE_1] ) begin
-        lut_data1 <= lut_data1_d;
-        lut_data3 <= lut_data3_d;
-      end
-   end
-   
+
    always_comb begin
+      // zero acc array   
       for (int k=0; k<NUM_ELEMENTS; k=k+1) begin
-         for (int j=0; j<ACC_ELEMENTS; j=j+1) begin
-            if( j < SEGMENT_ELEMENTS ) begin
-                // V54[32]
-                acc_stack[k][j+  0][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data0[k][j][BIT_LEN-1:0]};
-                acc_stack[k][j+ 32][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data1[k][j][BIT_LEN-1:0]};
-                // V76[36]
-                acc_stack[k][j+ 64][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data2[k][j][BIT_LEN-1:0]};
-                acc_stack[k][j+100][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data3[k][j][BIT_LEN-1:0]};
-            end else begin
-                acc_stack[k][j+ 64][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data2[k][j][BIT_LEN-1:0]};
-                acc_stack[k][j+100][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data3[k][j][BIT_LEN-1:0]};
-            end
+         for (int j=0; j<205; j=j+1) begin
+            acc_stack[k][j][ACC_BIT_LEN-1:0] = 0;
          end
-         acc_stack[k][136][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, reduced_grid_reg[k][BIT_LEN-1:0]};
+      end
+      // V54 have 32 entries each
+      for (int k=0; k<NUM_ELEMENTS; k=k+1) begin
+         for (int j=0; j<32; j=j+1) begin
+            acc_stack[k][j+  0][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data0[k][j][BIT_LEN-1:0]};
+            acc_stack[k][j+ 32][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data1[k][j][BIT_LEN-1:0]};
+            acc_stack[k][j+ 64][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data2[k][j][BIT_LEN-1:0]};
+         end
+      end
+      // V76 have 36 entries each
+      for (int k=0; k<NUM_ELEMENTS; k=k+1) begin
+         for (int j=0; j<32; j=j+1) begin
+            acc_stack[k][j+ 96][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data3[k][j][BIT_LEN-1:0]};
+            acc_stack[k][j+132][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data4[k][j][BIT_LEN-1:0]};
+            acc_stack[k][j+168][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data5[k][j][BIT_LEN-1:0]};
+         end
+      end
+      // V30 has 32 entries (as all other bits go into modulus calc
+      for (int k=0; k<NUM_ELEMENTS; k=k+1) begin
+         acc_stack[k][204][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, reduced_grid_sum[k][BIT_LEN-1:0]};
       end
    end
 
@@ -239,7 +247,7 @@ module modular_square_8_cycles
    
    generate
       for (i=0; i<NUM_ELEMENTS; i=i+1) begin : final_acc
-         compressor_tree_3_to_2 #(.NUM_ELEMENTS( 137 ), // V54 lsb, msb, V76 lsb, msb, V30
+         compressor_tree_3_to_2 #(.NUM_ELEMENTS( 205 ), // V54(32x) lsb, csb, msb, V76(36x) lsb, csb. msb, V30
                                   .BIT_LEN(ACC_BIT_LEN)
                                  )
             compressor_tree_3_to_2 (
@@ -410,7 +418,7 @@ endmodule
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-module dual_reduction_lut
+module full_reduction_lut
    #(
      parameter int REDUNDANT_ELEMENTS    = 2,
      parameter int NONREDUNDANT_ELEMENTS = 64,
@@ -420,267 +428,547 @@ module dual_reduction_lut
      parameter int DIN_LEN               = 8,
 
      parameter int NUM_ELEMENTS          = REDUNDANT_ELEMENTS+NONREDUNDANT_ELEMENTS,
-     parameter int LOOK_UP_WIDTH         = int'(WORD_LEN / 2),
+     parameter int LOOK_UP_WIDTH         = 6,
      parameter int EXTRA_ELEMENTS        = 2,
      parameter int LUT_NUM_ELEMENTS      = 36
     )
    (
-    input  logic                     clk,
-    input  logic [LOOK_UP_WIDTH:0]   lut54_addr[LUT_NUM_ELEMENTS], // V54 32 x lsb [7:0], or msb[16:8]
-    input  logic [LOOK_UP_WIDTH:0]   lut76_addr[LUT_NUM_ELEMENTS], // V76 36 x lsb [7:0], or msb[16:8]
+    input  logic [LOOK_UP_WIDTH-1:0]   lut54_lsb_addr[LUT_NUM_ELEMENTS], // V54 32 x lsb [5:0]
+    input  logic [LOOK_UP_WIDTH-1:0]   lut54_csb_addr[LUT_NUM_ELEMENTS], // V54 32 x csb [11:6]
+    input  logic [LOOK_UP_WIDTH-1:0]   lut54_msb_addr[LUT_NUM_ELEMENTS], // V54 32 x msb [16:12] - only 5 bit used
+    input  logic [LOOK_UP_WIDTH-1:0]   lut76_lsb_addr[LUT_NUM_ELEMENTS], // V76 36 x lsb [5:0]                    
+    input  logic [LOOK_UP_WIDTH-1:0]   lut76_csb_addr[LUT_NUM_ELEMENTS], // V76 36 x csb [11:6]                   
+    input  logic [LOOK_UP_WIDTH-1:0]   lut76_msb_addr[LUT_NUM_ELEMENTS], // V76 36 x msb [16:12] - only 5 bit used
+    
     output logic [BIT_LEN-1:0]       lut54_lsb_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
-    output logic [BIT_LEN-1:0]       lut76_lsb_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
+    output logic [BIT_LEN-1:0]       lut54_csb_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
     output logic [BIT_LEN-1:0]       lut54_msb_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
+    output logic [BIT_LEN-1:0]       lut76_lsb_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
+    output logic [BIT_LEN-1:0]       lut76_csb_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
     output logic [BIT_LEN-1:0]       lut76_msb_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS]
    );
 
-   // 9 bit lookups
-   localparam int NUM_LUT_ENTRIES   = 2**(LOOK_UP_WIDTH+1);
+   // 6 bit lookups
+   localparam int NUM_LUT_ENTRIES   = 2**(LOOK_UP_WIDTH);
    localparam int LUT_WIDTH         = WORD_LEN * NONREDUNDANT_ELEMENTS;
 
    localparam int NUM_BRAM          = LUT_NUM_ELEMENTS;
 
-   logic [LUT_WIDTH-1:0]  lut54_read_data[LUT_NUM_ELEMENTS];
-   logic [LUT_WIDTH-1:0]  lut76_read_data[LUT_NUM_ELEMENTS];
-   logic [LUT_WIDTH-1:0]  lut54_read_data_bram[NUM_BRAM];
-   logic [LUT_WIDTH-1:0]  lut76_read_data_bram[NUM_BRAM];
+   logic [LUT_WIDTH-1:0]  lut54_lsb_read_data[LUT_NUM_ELEMENTS];
+   logic [LUT_WIDTH-1:0]  lut54_csb_read_data[LUT_NUM_ELEMENTS];
+   logic [LUT_WIDTH-1:0]  lut54_msb_read_data[LUT_NUM_ELEMENTS];
+   logic [LUT_WIDTH-1:0]  lut76_lsb_read_data[LUT_NUM_ELEMENTS];
+   logic [LUT_WIDTH-1:0]  lut76_csb_read_data[LUT_NUM_ELEMENTS];
+   logic [LUT_WIDTH-1:0]  lut76_msb_read_data[LUT_NUM_ELEMENTS];
+   
+   logic [LUT_WIDTH-1:0]  lut54_lsb_read_data_bram[NUM_BRAM];
+   logic [LUT_WIDTH-1:0]  lut54_csb_read_data_bram[NUM_BRAM];
+   logic [LUT_WIDTH-1:0]  lut54_msb_read_data_bram[NUM_BRAM];
+   logic [LUT_WIDTH-1:0]  lut76_lsb_read_data_bram[NUM_BRAM];
+   logic [LUT_WIDTH-1:0]  lut76_csb_read_data_bram[NUM_BRAM];
+   logic [LUT_WIDTH-1:0]  lut76_msb_read_data_bram[NUM_BRAM];
    logic [BIT_LEN-1:0]    lut54_lsb_output[NUM_ELEMENTS][LUT_NUM_ELEMENTS];
-   logic [BIT_LEN-1:0]    lut76_lsb_output[NUM_ELEMENTS][LUT_NUM_ELEMENTS];
+   logic [BIT_LEN-1:0]    lut54_csb_output[NUM_ELEMENTS][LUT_NUM_ELEMENTS];
    logic [BIT_LEN-1:0]    lut54_msb_output[NUM_ELEMENTS][LUT_NUM_ELEMENTS];
+   logic [BIT_LEN-1:0]    lut76_lsb_output[NUM_ELEMENTS][LUT_NUM_ELEMENTS];
+   logic [BIT_LEN-1:0]    lut76_csb_output[NUM_ELEMENTS][LUT_NUM_ELEMENTS];
    logic [BIT_LEN-1:0]    lut76_msb_output[NUM_ELEMENTS][LUT_NUM_ELEMENTS];
 
    // Delay to align with data from memory
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_000[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_001[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_002[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_003[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_004[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_005[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_006[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_007[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_008[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_009[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_010[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_011[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_012[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_013[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_014[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_015[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_016[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_017[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_018[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_019[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_020[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_021[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_022[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_023[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_024[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_025[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_026[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_027[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_028[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_029[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_030[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_031[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_032[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_033[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_034[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut54_035[NUM_LUT_ENTRIES];
-
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_000[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_001[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_002[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_003[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_004[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_005[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_006[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_007[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_008[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_009[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_010[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_011[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_012[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_013[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_014[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_015[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_016[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_017[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_018[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_019[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_020[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_021[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_022[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_023[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_024[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_025[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_026[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_027[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_028[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_029[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_030[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_031[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_032[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_033[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_034[NUM_LUT_ENTRIES];
-   (* rom_style = "block" *) logic [LUT_WIDTH-1:0] lut76_035[NUM_LUT_ENTRIES];
+   logic [LUT_WIDTH-1:0] lut54_lsb_000[64], lut54_csb_000[64], lut54_msb_000[32], lut76_lsb_000[64], lut76_csb_000[64], lut76_msb_000[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_001[64], lut54_csb_001[64], lut54_msb_001[32], lut76_lsb_001[64], lut76_csb_001[64], lut76_msb_001[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_002[64], lut54_csb_002[64], lut54_msb_002[32], lut76_lsb_002[64], lut76_csb_002[64], lut76_msb_002[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_003[64], lut54_csb_003[64], lut54_msb_003[32], lut76_lsb_003[64], lut76_csb_003[64], lut76_msb_003[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_004[64], lut54_csb_004[64], lut54_msb_004[32], lut76_lsb_004[64], lut76_csb_004[64], lut76_msb_004[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_005[64], lut54_csb_005[64], lut54_msb_005[32], lut76_lsb_005[64], lut76_csb_005[64], lut76_msb_005[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_006[64], lut54_csb_006[64], lut54_msb_006[32], lut76_lsb_006[64], lut76_csb_006[64], lut76_msb_006[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_007[64], lut54_csb_007[64], lut54_msb_007[32], lut76_lsb_007[64], lut76_csb_007[64], lut76_msb_007[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_008[64], lut54_csb_008[64], lut54_msb_008[32], lut76_lsb_008[64], lut76_csb_008[64], lut76_msb_008[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_009[64], lut54_csb_009[64], lut54_msb_009[32], lut76_lsb_009[64], lut76_csb_009[64], lut76_msb_009[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_010[64], lut54_csb_010[64], lut54_msb_010[32], lut76_lsb_010[64], lut76_csb_010[64], lut76_msb_010[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_011[64], lut54_csb_011[64], lut54_msb_011[32], lut76_lsb_011[64], lut76_csb_011[64], lut76_msb_011[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_012[64], lut54_csb_012[64], lut54_msb_012[32], lut76_lsb_012[64], lut76_csb_012[64], lut76_msb_012[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_013[64], lut54_csb_013[64], lut54_msb_013[32], lut76_lsb_013[64], lut76_csb_013[64], lut76_msb_013[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_014[64], lut54_csb_014[64], lut54_msb_014[32], lut76_lsb_014[64], lut76_csb_014[64], lut76_msb_014[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_015[64], lut54_csb_015[64], lut54_msb_015[32], lut76_lsb_015[64], lut76_csb_015[64], lut76_msb_015[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_016[64], lut54_csb_016[64], lut54_msb_016[32], lut76_lsb_016[64], lut76_csb_016[64], lut76_msb_016[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_017[64], lut54_csb_017[64], lut54_msb_017[32], lut76_lsb_017[64], lut76_csb_017[64], lut76_msb_017[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_018[64], lut54_csb_018[64], lut54_msb_018[32], lut76_lsb_018[64], lut76_csb_018[64], lut76_msb_018[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_019[64], lut54_csb_019[64], lut54_msb_019[32], lut76_lsb_019[64], lut76_csb_019[64], lut76_msb_019[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_020[64], lut54_csb_020[64], lut54_msb_020[32], lut76_lsb_020[64], lut76_csb_020[64], lut76_msb_020[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_021[64], lut54_csb_021[64], lut54_msb_021[32], lut76_lsb_021[64], lut76_csb_021[64], lut76_msb_021[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_022[64], lut54_csb_022[64], lut54_msb_022[32], lut76_lsb_022[64], lut76_csb_022[64], lut76_msb_022[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_023[64], lut54_csb_023[64], lut54_msb_023[32], lut76_lsb_023[64], lut76_csb_023[64], lut76_msb_023[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_024[64], lut54_csb_024[64], lut54_msb_024[32], lut76_lsb_024[64], lut76_csb_024[64], lut76_msb_024[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_025[64], lut54_csb_025[64], lut54_msb_025[32], lut76_lsb_025[64], lut76_csb_025[64], lut76_msb_025[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_026[64], lut54_csb_026[64], lut54_msb_026[32], lut76_lsb_026[64], lut76_csb_026[64], lut76_msb_026[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_027[64], lut54_csb_027[64], lut54_msb_027[32], lut76_lsb_027[64], lut76_csb_027[64], lut76_msb_027[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_028[64], lut54_csb_028[64], lut54_msb_028[32], lut76_lsb_028[64], lut76_csb_028[64], lut76_msb_028[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_029[64], lut54_csb_029[64], lut54_msb_029[32], lut76_lsb_029[64], lut76_csb_029[64], lut76_msb_029[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_030[64], lut54_csb_030[64], lut54_msb_030[32], lut76_lsb_030[64], lut76_csb_030[64], lut76_msb_030[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_031[64], lut54_csb_031[64], lut54_msb_031[32], lut76_lsb_031[64], lut76_csb_031[64], lut76_msb_031[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_032[64], lut54_csb_032[64], lut54_msb_032[32], lut76_lsb_032[64], lut76_csb_032[64], lut76_msb_032[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_033[64], lut54_csb_033[64], lut54_msb_033[32], lut76_lsb_033[64], lut76_csb_033[64], lut76_msb_033[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_034[64], lut54_csb_034[64], lut54_msb_034[32], lut76_lsb_034[64], lut76_csb_034[64], lut76_msb_034[32];
+   logic [LUT_WIDTH-1:0] lut54_lsb_035[64], lut54_csb_035[64], lut54_msb_035[32], lut76_lsb_035[64], lut76_csb_035[64], lut76_msb_035[32];
 
    initial begin
-      $readmemh("reduction_lut_54_000.dat", lut54_000);
-      $readmemh("reduction_lut_54_001.dat", lut54_001);
-      $readmemh("reduction_lut_54_002.dat", lut54_002);
-      $readmemh("reduction_lut_54_003.dat", lut54_003);
-      $readmemh("reduction_lut_54_004.dat", lut54_004);
-      $readmemh("reduction_lut_54_005.dat", lut54_005);
-      $readmemh("reduction_lut_54_006.dat", lut54_006);
-      $readmemh("reduction_lut_54_007.dat", lut54_007);
-      $readmemh("reduction_lut_54_008.dat", lut54_008);
-      $readmemh("reduction_lut_54_009.dat", lut54_009);
-      $readmemh("reduction_lut_54_010.dat", lut54_010);
-      $readmemh("reduction_lut_54_011.dat", lut54_011);
-      $readmemh("reduction_lut_54_012.dat", lut54_012);
-      $readmemh("reduction_lut_54_013.dat", lut54_013);
-      $readmemh("reduction_lut_54_014.dat", lut54_014);
-      $readmemh("reduction_lut_54_015.dat", lut54_015);
-      $readmemh("reduction_lut_54_016.dat", lut54_016);
-      $readmemh("reduction_lut_54_017.dat", lut54_017);
-      $readmemh("reduction_lut_54_018.dat", lut54_018);
-      $readmemh("reduction_lut_54_019.dat", lut54_019);
-      $readmemh("reduction_lut_54_020.dat", lut54_020);
-      $readmemh("reduction_lut_54_021.dat", lut54_021);
-      $readmemh("reduction_lut_54_022.dat", lut54_022);
-      $readmemh("reduction_lut_54_023.dat", lut54_023);
-      $readmemh("reduction_lut_54_024.dat", lut54_024);
-      $readmemh("reduction_lut_54_025.dat", lut54_025);
-      $readmemh("reduction_lut_54_026.dat", lut54_026);
-      $readmemh("reduction_lut_54_027.dat", lut54_027);
-      $readmemh("reduction_lut_54_028.dat", lut54_028);
-      $readmemh("reduction_lut_54_029.dat", lut54_029);
-      $readmemh("reduction_lut_54_030.dat", lut54_030);
-      $readmemh("reduction_lut_54_031.dat", lut54_031);
-      $readmemh("reduction_lut_54_032.dat", lut54_032);
-      $readmemh("reduction_lut_54_033.dat", lut54_033);
-      $readmemh("reduction_lut_54_034.dat", lut54_034);
-      $readmemh("reduction_lut_54_035.dat", lut54_035);
+      $readmemh("reduction_lut_54_000.dat", lut54_lsb_000);
+      $readmemh("reduction_lut_54_001.dat", lut54_lsb_001);
+      $readmemh("reduction_lut_54_002.dat", lut54_lsb_002);
+      $readmemh("reduction_lut_54_003.dat", lut54_lsb_003);
+      $readmemh("reduction_lut_54_004.dat", lut54_lsb_004);
+      $readmemh("reduction_lut_54_005.dat", lut54_lsb_005);
+      $readmemh("reduction_lut_54_006.dat", lut54_lsb_006);
+      $readmemh("reduction_lut_54_007.dat", lut54_lsb_007);
+      $readmemh("reduction_lut_54_008.dat", lut54_lsb_008);
+      $readmemh("reduction_lut_54_009.dat", lut54_lsb_009);
+      $readmemh("reduction_lut_54_010.dat", lut54_lsb_010);
+      $readmemh("reduction_lut_54_011.dat", lut54_lsb_011);
+      $readmemh("reduction_lut_54_012.dat", lut54_lsb_012);
+      $readmemh("reduction_lut_54_013.dat", lut54_lsb_013);
+      $readmemh("reduction_lut_54_014.dat", lut54_lsb_014);
+      $readmemh("reduction_lut_54_015.dat", lut54_lsb_015);
+      $readmemh("reduction_lut_54_016.dat", lut54_lsb_016);
+      $readmemh("reduction_lut_54_017.dat", lut54_lsb_017);
+      $readmemh("reduction_lut_54_018.dat", lut54_lsb_018);
+      $readmemh("reduction_lut_54_019.dat", lut54_lsb_019);
+      $readmemh("reduction_lut_54_020.dat", lut54_lsb_020);
+      $readmemh("reduction_lut_54_021.dat", lut54_lsb_021);
+      $readmemh("reduction_lut_54_022.dat", lut54_lsb_022);
+      $readmemh("reduction_lut_54_023.dat", lut54_lsb_023);
+      $readmemh("reduction_lut_54_024.dat", lut54_lsb_024);
+      $readmemh("reduction_lut_54_025.dat", lut54_lsb_025);
+      $readmemh("reduction_lut_54_026.dat", lut54_lsb_026);
+      $readmemh("reduction_lut_54_027.dat", lut54_lsb_027);
+      $readmemh("reduction_lut_54_028.dat", lut54_lsb_028);
+      $readmemh("reduction_lut_54_029.dat", lut54_lsb_029);
+      $readmemh("reduction_lut_54_030.dat", lut54_lsb_030);
+      $readmemh("reduction_lut_54_031.dat", lut54_lsb_031);
+      $readmemh("reduction_lut_54_032.dat", lut54_lsb_032);
+      $readmemh("reduction_lut_54_033.dat", lut54_lsb_033);
+      $readmemh("reduction_lut_54_034.dat", lut54_lsb_034);
+      $readmemh("reduction_lut_54_035.dat", lut54_lsb_035);
 
-      $readmemh("reduction_lut_76_000.dat", lut76_000);
-      $readmemh("reduction_lut_76_001.dat", lut76_001);
-      $readmemh("reduction_lut_76_002.dat", lut76_002);
-      $readmemh("reduction_lut_76_003.dat", lut76_003);
-      $readmemh("reduction_lut_76_004.dat", lut76_004);
-      $readmemh("reduction_lut_76_005.dat", lut76_005);
-      $readmemh("reduction_lut_76_006.dat", lut76_006);
-      $readmemh("reduction_lut_76_007.dat", lut76_007);
-      $readmemh("reduction_lut_76_008.dat", lut76_008);
-      $readmemh("reduction_lut_76_009.dat", lut76_009);
-      $readmemh("reduction_lut_76_010.dat", lut76_010);
-      $readmemh("reduction_lut_76_011.dat", lut76_011);
-      $readmemh("reduction_lut_76_012.dat", lut76_012);
-      $readmemh("reduction_lut_76_013.dat", lut76_013);
-      $readmemh("reduction_lut_76_014.dat", lut76_014);
-      $readmemh("reduction_lut_76_015.dat", lut76_015);
-      $readmemh("reduction_lut_76_016.dat", lut76_016);
-      $readmemh("reduction_lut_76_017.dat", lut76_017);
-      $readmemh("reduction_lut_76_018.dat", lut76_018);
-      $readmemh("reduction_lut_76_019.dat", lut76_019);
-      $readmemh("reduction_lut_76_020.dat", lut76_020);
-      $readmemh("reduction_lut_76_021.dat", lut76_021);
-      $readmemh("reduction_lut_76_022.dat", lut76_022);
-      $readmemh("reduction_lut_76_023.dat", lut76_023);
-      $readmemh("reduction_lut_76_024.dat", lut76_024);
-      $readmemh("reduction_lut_76_025.dat", lut76_025);
-      $readmemh("reduction_lut_76_026.dat", lut76_026);
-      $readmemh("reduction_lut_76_027.dat", lut76_027);
-      $readmemh("reduction_lut_76_028.dat", lut76_028);
-      $readmemh("reduction_lut_76_029.dat", lut76_029);
-      $readmemh("reduction_lut_76_030.dat", lut76_030);
-      $readmemh("reduction_lut_76_031.dat", lut76_031);
-      $readmemh("reduction_lut_76_032.dat", lut76_032);
-      $readmemh("reduction_lut_76_033.dat", lut76_033);
-      $readmemh("reduction_lut_76_034.dat", lut76_034);
-      $readmemh("reduction_lut_76_035.dat", lut76_035);
+      $readmemh("reduction_lut_54_000.dat", lut54_csb_000);
+      $readmemh("reduction_lut_54_001.dat", lut54_csb_001);
+      $readmemh("reduction_lut_54_002.dat", lut54_csb_002);
+      $readmemh("reduction_lut_54_003.dat", lut54_csb_003);
+      $readmemh("reduction_lut_54_004.dat", lut54_csb_004);
+      $readmemh("reduction_lut_54_005.dat", lut54_csb_005);
+      $readmemh("reduction_lut_54_006.dat", lut54_csb_006);
+      $readmemh("reduction_lut_54_007.dat", lut54_csb_007);
+      $readmemh("reduction_lut_54_008.dat", lut54_csb_008);
+      $readmemh("reduction_lut_54_009.dat", lut54_csb_009);
+      $readmemh("reduction_lut_54_010.dat", lut54_csb_010);
+      $readmemh("reduction_lut_54_011.dat", lut54_csb_011);
+      $readmemh("reduction_lut_54_012.dat", lut54_csb_012);
+      $readmemh("reduction_lut_54_013.dat", lut54_csb_013);
+      $readmemh("reduction_lut_54_014.dat", lut54_csb_014);
+      $readmemh("reduction_lut_54_015.dat", lut54_csb_015);
+      $readmemh("reduction_lut_54_016.dat", lut54_csb_016);
+      $readmemh("reduction_lut_54_017.dat", lut54_csb_017);
+      $readmemh("reduction_lut_54_018.dat", lut54_csb_018);
+      $readmemh("reduction_lut_54_019.dat", lut54_csb_019);
+      $readmemh("reduction_lut_54_020.dat", lut54_csb_020);
+      $readmemh("reduction_lut_54_021.dat", lut54_csb_021);
+      $readmemh("reduction_lut_54_022.dat", lut54_csb_022);
+      $readmemh("reduction_lut_54_023.dat", lut54_csb_023);
+      $readmemh("reduction_lut_54_024.dat", lut54_csb_024);
+      $readmemh("reduction_lut_54_025.dat", lut54_csb_025);
+      $readmemh("reduction_lut_54_026.dat", lut54_csb_026);
+      $readmemh("reduction_lut_54_027.dat", lut54_csb_027);
+      $readmemh("reduction_lut_54_028.dat", lut54_csb_028);
+      $readmemh("reduction_lut_54_029.dat", lut54_csb_029);
+      $readmemh("reduction_lut_54_030.dat", lut54_csb_030);
+      $readmemh("reduction_lut_54_031.dat", lut54_csb_031);
+      $readmemh("reduction_lut_54_032.dat", lut54_csb_032);
+      $readmemh("reduction_lut_54_033.dat", lut54_csb_033);
+      $readmemh("reduction_lut_54_034.dat", lut54_csb_034);
+      $readmemh("reduction_lut_54_035.dat", lut54_csb_035);
+
+      $readmemh("reduction_lut_54_000.dat", lut54_msb_000);
+      $readmemh("reduction_lut_54_001.dat", lut54_msb_001);
+      $readmemh("reduction_lut_54_002.dat", lut54_msb_002);
+      $readmemh("reduction_lut_54_003.dat", lut54_msb_003);
+      $readmemh("reduction_lut_54_004.dat", lut54_msb_004);
+      $readmemh("reduction_lut_54_005.dat", lut54_msb_005);
+      $readmemh("reduction_lut_54_006.dat", lut54_msb_006);
+      $readmemh("reduction_lut_54_007.dat", lut54_msb_007);
+      $readmemh("reduction_lut_54_008.dat", lut54_msb_008);
+      $readmemh("reduction_lut_54_009.dat", lut54_msb_009);
+      $readmemh("reduction_lut_54_010.dat", lut54_msb_010);
+      $readmemh("reduction_lut_54_011.dat", lut54_msb_011);
+      $readmemh("reduction_lut_54_012.dat", lut54_msb_012);
+      $readmemh("reduction_lut_54_013.dat", lut54_msb_013);
+      $readmemh("reduction_lut_54_014.dat", lut54_msb_014);
+      $readmemh("reduction_lut_54_015.dat", lut54_msb_015);
+      $readmemh("reduction_lut_54_016.dat", lut54_msb_016);
+      $readmemh("reduction_lut_54_017.dat", lut54_msb_017);
+      $readmemh("reduction_lut_54_018.dat", lut54_msb_018);
+      $readmemh("reduction_lut_54_019.dat", lut54_msb_019);
+      $readmemh("reduction_lut_54_020.dat", lut54_msb_020);
+      $readmemh("reduction_lut_54_021.dat", lut54_msb_021);
+      $readmemh("reduction_lut_54_022.dat", lut54_msb_022);
+      $readmemh("reduction_lut_54_023.dat", lut54_msb_023);
+      $readmemh("reduction_lut_54_024.dat", lut54_msb_024);
+      $readmemh("reduction_lut_54_025.dat", lut54_msb_025);
+      $readmemh("reduction_lut_54_026.dat", lut54_msb_026);
+      $readmemh("reduction_lut_54_027.dat", lut54_msb_027);
+      $readmemh("reduction_lut_54_028.dat", lut54_msb_028);
+      $readmemh("reduction_lut_54_029.dat", lut54_msb_029);
+      $readmemh("reduction_lut_54_030.dat", lut54_msb_030);
+      $readmemh("reduction_lut_54_031.dat", lut54_msb_031);
+      $readmemh("reduction_lut_54_032.dat", lut54_msb_032);
+      $readmemh("reduction_lut_54_033.dat", lut54_msb_033);
+      $readmemh("reduction_lut_54_034.dat", lut54_msb_034);
+      $readmemh("reduction_lut_54_035.dat", lut54_msb_035);
+
+      $readmemh("reduction_lut_76_000.dat", lut76_lsb_000);
+      $readmemh("reduction_lut_76_001.dat", lut76_lsb_001);
+      $readmemh("reduction_lut_76_002.dat", lut76_lsb_002);
+      $readmemh("reduction_lut_76_003.dat", lut76_lsb_003);
+      $readmemh("reduction_lut_76_004.dat", lut76_lsb_004);
+      $readmemh("reduction_lut_76_005.dat", lut76_lsb_005);
+      $readmemh("reduction_lut_76_006.dat", lut76_lsb_006);
+      $readmemh("reduction_lut_76_007.dat", lut76_lsb_007);
+      $readmemh("reduction_lut_76_008.dat", lut76_lsb_008);
+      $readmemh("reduction_lut_76_009.dat", lut76_lsb_009);
+      $readmemh("reduction_lut_76_010.dat", lut76_lsb_010);
+      $readmemh("reduction_lut_76_011.dat", lut76_lsb_011);
+      $readmemh("reduction_lut_76_012.dat", lut76_lsb_012);
+      $readmemh("reduction_lut_76_013.dat", lut76_lsb_013);
+      $readmemh("reduction_lut_76_014.dat", lut76_lsb_014);
+      $readmemh("reduction_lut_76_015.dat", lut76_lsb_015);
+      $readmemh("reduction_lut_76_016.dat", lut76_lsb_016);
+      $readmemh("reduction_lut_76_017.dat", lut76_lsb_017);
+      $readmemh("reduction_lut_76_018.dat", lut76_lsb_018);
+      $readmemh("reduction_lut_76_019.dat", lut76_lsb_019);
+      $readmemh("reduction_lut_76_020.dat", lut76_lsb_020);
+      $readmemh("reduction_lut_76_021.dat", lut76_lsb_021);
+      $readmemh("reduction_lut_76_022.dat", lut76_lsb_022);
+      $readmemh("reduction_lut_76_023.dat", lut76_lsb_023);
+      $readmemh("reduction_lut_76_024.dat", lut76_lsb_024);
+      $readmemh("reduction_lut_76_025.dat", lut76_lsb_025);
+      $readmemh("reduction_lut_76_026.dat", lut76_lsb_026);
+      $readmemh("reduction_lut_76_027.dat", lut76_lsb_027);
+      $readmemh("reduction_lut_76_028.dat", lut76_lsb_028);
+      $readmemh("reduction_lut_76_029.dat", lut76_lsb_029);
+      $readmemh("reduction_lut_76_030.dat", lut76_lsb_030);
+      $readmemh("reduction_lut_76_031.dat", lut76_lsb_031);
+      $readmemh("reduction_lut_76_032.dat", lut76_lsb_032);
+      $readmemh("reduction_lut_76_033.dat", lut76_lsb_033);
+      $readmemh("reduction_lut_76_034.dat", lut76_lsb_034);
+      $readmemh("reduction_lut_76_035.dat", lut76_lsb_035);
+
+      $readmemh("reduction_lut_76_000.dat", lut76_csb_000);
+      $readmemh("reduction_lut_76_001.dat", lut76_csb_001);
+      $readmemh("reduction_lut_76_002.dat", lut76_csb_002);
+      $readmemh("reduction_lut_76_003.dat", lut76_csb_003);
+      $readmemh("reduction_lut_76_004.dat", lut76_csb_004);
+      $readmemh("reduction_lut_76_005.dat", lut76_csb_005);
+      $readmemh("reduction_lut_76_006.dat", lut76_csb_006);
+      $readmemh("reduction_lut_76_007.dat", lut76_csb_007);
+      $readmemh("reduction_lut_76_008.dat", lut76_csb_008);
+      $readmemh("reduction_lut_76_009.dat", lut76_csb_009);
+      $readmemh("reduction_lut_76_010.dat", lut76_csb_010);
+      $readmemh("reduction_lut_76_011.dat", lut76_csb_011);
+      $readmemh("reduction_lut_76_012.dat", lut76_csb_012);
+      $readmemh("reduction_lut_76_013.dat", lut76_csb_013);
+      $readmemh("reduction_lut_76_014.dat", lut76_csb_014);
+      $readmemh("reduction_lut_76_015.dat", lut76_csb_015);
+      $readmemh("reduction_lut_76_016.dat", lut76_csb_016);
+      $readmemh("reduction_lut_76_017.dat", lut76_csb_017);
+      $readmemh("reduction_lut_76_018.dat", lut76_csb_018);
+      $readmemh("reduction_lut_76_019.dat", lut76_csb_019);
+      $readmemh("reduction_lut_76_020.dat", lut76_csb_020);
+      $readmemh("reduction_lut_76_021.dat", lut76_csb_021);
+      $readmemh("reduction_lut_76_022.dat", lut76_csb_022);
+      $readmemh("reduction_lut_76_023.dat", lut76_csb_023);
+      $readmemh("reduction_lut_76_024.dat", lut76_csb_024);
+      $readmemh("reduction_lut_76_025.dat", lut76_csb_025);
+      $readmemh("reduction_lut_76_026.dat", lut76_csb_026);
+      $readmemh("reduction_lut_76_027.dat", lut76_csb_027);
+      $readmemh("reduction_lut_76_028.dat", lut76_csb_028);
+      $readmemh("reduction_lut_76_029.dat", lut76_csb_029);
+      $readmemh("reduction_lut_76_030.dat", lut76_csb_030);
+      $readmemh("reduction_lut_76_031.dat", lut76_csb_031);
+      $readmemh("reduction_lut_76_032.dat", lut76_csb_032);
+      $readmemh("reduction_lut_76_033.dat", lut76_csb_033);
+      $readmemh("reduction_lut_76_034.dat", lut76_csb_034);
+      $readmemh("reduction_lut_76_035.dat", lut76_csb_035);
+
+      $readmemh("reduction_lut_76_000.dat", lut76_msb_000);
+      $readmemh("reduction_lut_76_001.dat", lut76_msb_001);
+      $readmemh("reduction_lut_76_002.dat", lut76_msb_002);
+      $readmemh("reduction_lut_76_003.dat", lut76_msb_003);
+      $readmemh("reduction_lut_76_004.dat", lut76_msb_004);
+      $readmemh("reduction_lut_76_005.dat", lut76_msb_005);
+      $readmemh("reduction_lut_76_006.dat", lut76_msb_006);
+      $readmemh("reduction_lut_76_007.dat", lut76_msb_007);
+      $readmemh("reduction_lut_76_008.dat", lut76_msb_008);
+      $readmemh("reduction_lut_76_009.dat", lut76_msb_009);
+      $readmemh("reduction_lut_76_010.dat", lut76_msb_010);
+      $readmemh("reduction_lut_76_011.dat", lut76_msb_011);
+      $readmemh("reduction_lut_76_012.dat", lut76_msb_012);
+      $readmemh("reduction_lut_76_013.dat", lut76_msb_013);
+      $readmemh("reduction_lut_76_014.dat", lut76_msb_014);
+      $readmemh("reduction_lut_76_015.dat", lut76_msb_015);
+      $readmemh("reduction_lut_76_016.dat", lut76_msb_016);
+      $readmemh("reduction_lut_76_017.dat", lut76_msb_017);
+      $readmemh("reduction_lut_76_018.dat", lut76_msb_018);
+      $readmemh("reduction_lut_76_019.dat", lut76_msb_019);
+      $readmemh("reduction_lut_76_020.dat", lut76_msb_020);
+      $readmemh("reduction_lut_76_021.dat", lut76_msb_021);
+      $readmemh("reduction_lut_76_022.dat", lut76_msb_022);
+      $readmemh("reduction_lut_76_023.dat", lut76_msb_023);
+      $readmemh("reduction_lut_76_024.dat", lut76_msb_024);
+      $readmemh("reduction_lut_76_025.dat", lut76_msb_025);
+      $readmemh("reduction_lut_76_026.dat", lut76_msb_026);
+      $readmemh("reduction_lut_76_027.dat", lut76_msb_027);
+      $readmemh("reduction_lut_76_028.dat", lut76_msb_028);
+      $readmemh("reduction_lut_76_029.dat", lut76_msb_029);
+      $readmemh("reduction_lut_76_030.dat", lut76_msb_030);
+      $readmemh("reduction_lut_76_031.dat", lut76_msb_031);
+      $readmemh("reduction_lut_76_032.dat", lut76_msb_032);
+      $readmemh("reduction_lut_76_033.dat", lut76_msb_033);
+      $readmemh("reduction_lut_76_034.dat", lut76_msb_034);
+      $readmemh("reduction_lut_76_035.dat", lut76_msb_035);
    end
 
-   always_ff @(posedge clk) begin
-      lut54_read_data_bram[0]  <= lut54_000[lut54_addr[0]];
-      lut54_read_data_bram[1]  <= lut54_001[lut54_addr[1]];
-      lut54_read_data_bram[2]  <= lut54_002[lut54_addr[2]];
-      lut54_read_data_bram[3]  <= lut54_003[lut54_addr[3]];
-      lut54_read_data_bram[4]  <= lut54_004[lut54_addr[4]];
-      lut54_read_data_bram[5]  <= lut54_005[lut54_addr[5]];
-      lut54_read_data_bram[6]  <= lut54_006[lut54_addr[6]];
-      lut54_read_data_bram[7]  <= lut54_007[lut54_addr[7]];
-      lut54_read_data_bram[8]  <= lut54_008[lut54_addr[8]];
-      lut54_read_data_bram[9]  <= lut54_009[lut54_addr[9]];
-      lut54_read_data_bram[10] <= lut54_010[lut54_addr[10]];
-      lut54_read_data_bram[11] <= lut54_011[lut54_addr[11]];
-      lut54_read_data_bram[12] <= lut54_012[lut54_addr[12]];
-      lut54_read_data_bram[13] <= lut54_013[lut54_addr[13]];
-      lut54_read_data_bram[14] <= lut54_014[lut54_addr[14]];
-      lut54_read_data_bram[15] <= lut54_015[lut54_addr[15]];
-      lut54_read_data_bram[16] <= lut54_016[lut54_addr[16]];
-      lut54_read_data_bram[17] <= lut54_017[lut54_addr[17]];
-      lut54_read_data_bram[18] <= lut54_018[lut54_addr[18]];
-      lut54_read_data_bram[19] <= lut54_019[lut54_addr[19]];
-      lut54_read_data_bram[20] <= lut54_020[lut54_addr[20]];
-      lut54_read_data_bram[21] <= lut54_021[lut54_addr[21]];
-      lut54_read_data_bram[22] <= lut54_022[lut54_addr[22]];
-      lut54_read_data_bram[23] <= lut54_023[lut54_addr[23]];
-      lut54_read_data_bram[24] <= lut54_024[lut54_addr[24]];
-      lut54_read_data_bram[25] <= lut54_025[lut54_addr[25]];
-      lut54_read_data_bram[26] <= lut54_026[lut54_addr[26]];
-      lut54_read_data_bram[27] <= lut54_027[lut54_addr[27]];
-      lut54_read_data_bram[28] <= lut54_028[lut54_addr[28]];
-      lut54_read_data_bram[29] <= lut54_029[lut54_addr[29]];
-      lut54_read_data_bram[30] <= lut54_030[lut54_addr[30]];
-      lut54_read_data_bram[31] <= lut54_031[lut54_addr[31]];
-      lut54_read_data_bram[32] <= lut54_032[lut54_addr[32]];
-      lut54_read_data_bram[33] <= lut54_033[lut54_addr[33]];
-      lut54_read_data_bram[34] <= lut54_034[lut54_addr[34]];
-      lut54_read_data_bram[35] <= lut54_035[lut54_addr[35]];
+   always_comb begin
+      lut54_lsb_read_data_bram[0]  <= lut54_lsb_000[lut54_lsb_addr[ 0][5:0]];
+      lut54_lsb_read_data_bram[1]  <= lut54_lsb_001[lut54_lsb_addr[ 1][5:0]];
+      lut54_lsb_read_data_bram[2]  <= lut54_lsb_002[lut54_lsb_addr[ 2][5:0]];
+      lut54_lsb_read_data_bram[3]  <= lut54_lsb_003[lut54_lsb_addr[ 3][5:0]];
+      lut54_lsb_read_data_bram[4]  <= lut54_lsb_004[lut54_lsb_addr[ 4][5:0]];
+      lut54_lsb_read_data_bram[5]  <= lut54_lsb_005[lut54_lsb_addr[ 5][5:0]];
+      lut54_lsb_read_data_bram[6]  <= lut54_lsb_006[lut54_lsb_addr[ 6][5:0]];
+      lut54_lsb_read_data_bram[7]  <= lut54_lsb_007[lut54_lsb_addr[ 7][5:0]];
+      lut54_lsb_read_data_bram[8]  <= lut54_lsb_008[lut54_lsb_addr[ 8][5:0]];
+      lut54_lsb_read_data_bram[9]  <= lut54_lsb_009[lut54_lsb_addr[ 9][5:0]];
+      lut54_lsb_read_data_bram[10] <= lut54_lsb_010[lut54_lsb_addr[10][5:0]];
+      lut54_lsb_read_data_bram[11] <= lut54_lsb_011[lut54_lsb_addr[11][5:0]];
+      lut54_lsb_read_data_bram[12] <= lut54_lsb_012[lut54_lsb_addr[12][5:0]];
+      lut54_lsb_read_data_bram[13] <= lut54_lsb_013[lut54_lsb_addr[13][5:0]];
+      lut54_lsb_read_data_bram[14] <= lut54_lsb_014[lut54_lsb_addr[14][5:0]];
+      lut54_lsb_read_data_bram[15] <= lut54_lsb_015[lut54_lsb_addr[15][5:0]];
+      lut54_lsb_read_data_bram[16] <= lut54_lsb_016[lut54_lsb_addr[16][5:0]];
+      lut54_lsb_read_data_bram[17] <= lut54_lsb_017[lut54_lsb_addr[17][5:0]];
+      lut54_lsb_read_data_bram[18] <= lut54_lsb_018[lut54_lsb_addr[18][5:0]];
+      lut54_lsb_read_data_bram[19] <= lut54_lsb_019[lut54_lsb_addr[19][5:0]];
+      lut54_lsb_read_data_bram[20] <= lut54_lsb_020[lut54_lsb_addr[20][5:0]];
+      lut54_lsb_read_data_bram[21] <= lut54_lsb_021[lut54_lsb_addr[21][5:0]];
+      lut54_lsb_read_data_bram[22] <= lut54_lsb_022[lut54_lsb_addr[22][5:0]];
+      lut54_lsb_read_data_bram[23] <= lut54_lsb_023[lut54_lsb_addr[23][5:0]];
+      lut54_lsb_read_data_bram[24] <= lut54_lsb_024[lut54_lsb_addr[24][5:0]];
+      lut54_lsb_read_data_bram[25] <= lut54_lsb_025[lut54_lsb_addr[25][5:0]];
+      lut54_lsb_read_data_bram[26] <= lut54_lsb_026[lut54_lsb_addr[26][5:0]];
+      lut54_lsb_read_data_bram[27] <= lut54_lsb_027[lut54_lsb_addr[27][5:0]];
+      lut54_lsb_read_data_bram[28] <= lut54_lsb_028[lut54_lsb_addr[28][5:0]];
+      lut54_lsb_read_data_bram[29] <= lut54_lsb_029[lut54_lsb_addr[29][5:0]];
+      lut54_lsb_read_data_bram[30] <= lut54_lsb_030[lut54_lsb_addr[30][5:0]];
+      lut54_lsb_read_data_bram[31] <= lut54_lsb_031[lut54_lsb_addr[31][5:0]];
+      lut54_lsb_read_data_bram[32] <= lut54_lsb_032[lut54_lsb_addr[32][5:0]];
+      lut54_lsb_read_data_bram[33] <= lut54_lsb_033[lut54_lsb_addr[33][5:0]];
+      lut54_lsb_read_data_bram[34] <= lut54_lsb_034[lut54_lsb_addr[34][5:0]];
+      lut54_lsb_read_data_bram[35] <= lut54_lsb_035[lut54_lsb_addr[35][5:0]];
 
-      lut76_read_data_bram[0]  <= lut76_000[lut76_addr[0]];
-      lut76_read_data_bram[1]  <= lut76_001[lut76_addr[1]];
-      lut76_read_data_bram[2]  <= lut76_002[lut76_addr[2]];
-      lut76_read_data_bram[3]  <= lut76_003[lut76_addr[3]];
-      lut76_read_data_bram[4]  <= lut76_004[lut76_addr[4]];
-      lut76_read_data_bram[5]  <= lut76_005[lut76_addr[5]];
-      lut76_read_data_bram[6]  <= lut76_006[lut76_addr[6]];
-      lut76_read_data_bram[7]  <= lut76_007[lut76_addr[7]];
-      lut76_read_data_bram[8]  <= lut76_008[lut76_addr[8]];
-      lut76_read_data_bram[9]  <= lut76_009[lut76_addr[9]];
-      lut76_read_data_bram[10] <= lut76_010[lut76_addr[10]];
-      lut76_read_data_bram[11] <= lut76_011[lut76_addr[11]];
-      lut76_read_data_bram[12] <= lut76_012[lut76_addr[12]];
-      lut76_read_data_bram[13] <= lut76_013[lut76_addr[13]];
-      lut76_read_data_bram[14] <= lut76_014[lut76_addr[14]];
-      lut76_read_data_bram[15] <= lut76_015[lut76_addr[15]];
-      lut76_read_data_bram[16] <= lut76_016[lut76_addr[16]];
-      lut76_read_data_bram[17] <= lut76_017[lut76_addr[17]];
-      lut76_read_data_bram[18] <= lut76_018[lut76_addr[18]];
-      lut76_read_data_bram[19] <= lut76_019[lut76_addr[19]];
-      lut76_read_data_bram[20] <= lut76_020[lut76_addr[20]];
-      lut76_read_data_bram[21] <= lut76_021[lut76_addr[21]];
-      lut76_read_data_bram[22] <= lut76_022[lut76_addr[22]];
-      lut76_read_data_bram[23] <= lut76_023[lut76_addr[23]];
-      lut76_read_data_bram[24] <= lut76_024[lut76_addr[24]];
-      lut76_read_data_bram[25] <= lut76_025[lut76_addr[25]];
-      lut76_read_data_bram[26] <= lut76_026[lut76_addr[26]];
-      lut76_read_data_bram[27] <= lut76_027[lut76_addr[27]];
-      lut76_read_data_bram[28] <= lut76_028[lut76_addr[28]];
-      lut76_read_data_bram[29] <= lut76_029[lut76_addr[29]];
-      lut76_read_data_bram[30] <= lut76_030[lut76_addr[30]];
-      lut76_read_data_bram[31] <= lut76_031[lut76_addr[31]];
-      lut76_read_data_bram[32] <= lut76_032[lut76_addr[32]];
-      lut76_read_data_bram[33] <= lut76_033[lut76_addr[33]];
-      lut76_read_data_bram[34] <= lut76_034[lut76_addr[34]];
-      lut76_read_data_bram[35] <= lut76_035[lut76_addr[35]];
+      lut54_csb_read_data_bram[0]  <= lut54_csb_000[lut54_csb_addr[ 0][5:0]];
+      lut54_csb_read_data_bram[1]  <= lut54_csb_001[lut54_csb_addr[ 1][5:0]];
+      lut54_csb_read_data_bram[2]  <= lut54_csb_002[lut54_csb_addr[ 2][5:0]];
+      lut54_csb_read_data_bram[3]  <= lut54_csb_003[lut54_csb_addr[ 3][5:0]];
+      lut54_csb_read_data_bram[4]  <= lut54_csb_004[lut54_csb_addr[ 4][5:0]];
+      lut54_csb_read_data_bram[5]  <= lut54_csb_005[lut54_csb_addr[ 5][5:0]];
+      lut54_csb_read_data_bram[6]  <= lut54_csb_006[lut54_csb_addr[ 6][5:0]];
+      lut54_csb_read_data_bram[7]  <= lut54_csb_007[lut54_csb_addr[ 7][5:0]];
+      lut54_csb_read_data_bram[8]  <= lut54_csb_008[lut54_csb_addr[ 8][5:0]];
+      lut54_csb_read_data_bram[9]  <= lut54_csb_009[lut54_csb_addr[ 9][5:0]];
+      lut54_csb_read_data_bram[10] <= lut54_csb_010[lut54_csb_addr[10][5:0]];
+      lut54_csb_read_data_bram[11] <= lut54_csb_011[lut54_csb_addr[11][5:0]];
+      lut54_csb_read_data_bram[12] <= lut54_csb_012[lut54_csb_addr[12][5:0]];
+      lut54_csb_read_data_bram[13] <= lut54_csb_013[lut54_csb_addr[13][5:0]];
+      lut54_csb_read_data_bram[14] <= lut54_csb_014[lut54_csb_addr[14][5:0]];
+      lut54_csb_read_data_bram[15] <= lut54_csb_015[lut54_csb_addr[15][5:0]];
+      lut54_csb_read_data_bram[16] <= lut54_csb_016[lut54_csb_addr[16][5:0]];
+      lut54_csb_read_data_bram[17] <= lut54_csb_017[lut54_csb_addr[17][5:0]];
+      lut54_csb_read_data_bram[18] <= lut54_csb_018[lut54_csb_addr[18][5:0]];
+      lut54_csb_read_data_bram[19] <= lut54_csb_019[lut54_csb_addr[19][5:0]];
+      lut54_csb_read_data_bram[20] <= lut54_csb_020[lut54_csb_addr[20][5:0]];
+      lut54_csb_read_data_bram[21] <= lut54_csb_021[lut54_csb_addr[21][5:0]];
+      lut54_csb_read_data_bram[22] <= lut54_csb_022[lut54_csb_addr[22][5:0]];
+      lut54_csb_read_data_bram[23] <= lut54_csb_023[lut54_csb_addr[23][5:0]];
+      lut54_csb_read_data_bram[24] <= lut54_csb_024[lut54_csb_addr[24][5:0]];
+      lut54_csb_read_data_bram[25] <= lut54_csb_025[lut54_csb_addr[25][5:0]];
+      lut54_csb_read_data_bram[26] <= lut54_csb_026[lut54_csb_addr[26][5:0]];
+      lut54_csb_read_data_bram[27] <= lut54_csb_027[lut54_csb_addr[27][5:0]];
+      lut54_csb_read_data_bram[28] <= lut54_csb_028[lut54_csb_addr[28][5:0]];
+      lut54_csb_read_data_bram[29] <= lut54_csb_029[lut54_csb_addr[29][5:0]];
+      lut54_csb_read_data_bram[30] <= lut54_csb_030[lut54_csb_addr[30][5:0]];
+      lut54_csb_read_data_bram[31] <= lut54_csb_031[lut54_csb_addr[31][5:0]];
+      lut54_csb_read_data_bram[32] <= lut54_csb_032[lut54_csb_addr[32][5:0]];
+      lut54_csb_read_data_bram[33] <= lut54_csb_033[lut54_csb_addr[33][5:0]];
+      lut54_csb_read_data_bram[34] <= lut54_csb_034[lut54_csb_addr[34][5:0]];
+      lut54_csb_read_data_bram[35] <= lut54_csb_035[lut54_csb_addr[35][5:0]];
+
+      lut54_msb_read_data_bram[0]  <= lut54_msb_000[lut54_msb_addr[ 0][4:0]];
+      lut54_msb_read_data_bram[1]  <= lut54_msb_001[lut54_msb_addr[ 1][4:0]];
+      lut54_msb_read_data_bram[2]  <= lut54_msb_002[lut54_msb_addr[ 2][4:0]];
+      lut54_msb_read_data_bram[3]  <= lut54_msb_003[lut54_msb_addr[ 3][4:0]];
+      lut54_msb_read_data_bram[4]  <= lut54_msb_004[lut54_msb_addr[ 4][4:0]];
+      lut54_msb_read_data_bram[5]  <= lut54_msb_005[lut54_msb_addr[ 5][4:0]];
+      lut54_msb_read_data_bram[6]  <= lut54_msb_006[lut54_msb_addr[ 6][4:0]];
+      lut54_msb_read_data_bram[7]  <= lut54_msb_007[lut54_msb_addr[ 7][4:0]];
+      lut54_msb_read_data_bram[8]  <= lut54_msb_008[lut54_msb_addr[ 8][4:0]];
+      lut54_msb_read_data_bram[9]  <= lut54_msb_009[lut54_msb_addr[ 9][4:0]];
+      lut54_msb_read_data_bram[10] <= lut54_msb_010[lut54_msb_addr[10][4:0]];
+      lut54_msb_read_data_bram[11] <= lut54_msb_011[lut54_msb_addr[11][4:0]];
+      lut54_msb_read_data_bram[12] <= lut54_msb_012[lut54_msb_addr[12][4:0]];
+      lut54_msb_read_data_bram[13] <= lut54_msb_013[lut54_msb_addr[13][4:0]];
+      lut54_msb_read_data_bram[14] <= lut54_msb_014[lut54_msb_addr[14][4:0]];
+      lut54_msb_read_data_bram[15] <= lut54_msb_015[lut54_msb_addr[15][4:0]];
+      lut54_msb_read_data_bram[16] <= lut54_msb_016[lut54_msb_addr[16][4:0]];
+      lut54_msb_read_data_bram[17] <= lut54_msb_017[lut54_msb_addr[17][4:0]];
+      lut54_msb_read_data_bram[18] <= lut54_msb_018[lut54_msb_addr[18][4:0]];
+      lut54_msb_read_data_bram[19] <= lut54_msb_019[lut54_msb_addr[19][4:0]];
+      lut54_msb_read_data_bram[20] <= lut54_msb_020[lut54_msb_addr[20][4:0]];
+      lut54_msb_read_data_bram[21] <= lut54_msb_021[lut54_msb_addr[21][4:0]];
+      lut54_msb_read_data_bram[22] <= lut54_msb_022[lut54_msb_addr[22][4:0]];
+      lut54_msb_read_data_bram[23] <= lut54_msb_023[lut54_msb_addr[23][4:0]];
+      lut54_msb_read_data_bram[24] <= lut54_msb_024[lut54_msb_addr[24][4:0]];
+      lut54_msb_read_data_bram[25] <= lut54_msb_025[lut54_msb_addr[25][4:0]];
+      lut54_msb_read_data_bram[26] <= lut54_msb_026[lut54_msb_addr[26][4:0]];
+      lut54_msb_read_data_bram[27] <= lut54_msb_027[lut54_msb_addr[27][4:0]];
+      lut54_msb_read_data_bram[28] <= lut54_msb_028[lut54_msb_addr[28][4:0]];
+      lut54_msb_read_data_bram[29] <= lut54_msb_029[lut54_msb_addr[29][4:0]];
+      lut54_msb_read_data_bram[30] <= lut54_msb_030[lut54_msb_addr[30][4:0]];
+      lut54_msb_read_data_bram[31] <= lut54_msb_031[lut54_msb_addr[31][4:0]];
+      lut54_msb_read_data_bram[32] <= lut54_msb_032[lut54_msb_addr[32][4:0]];
+      lut54_msb_read_data_bram[33] <= lut54_msb_033[lut54_msb_addr[33][4:0]];
+      lut54_msb_read_data_bram[34] <= lut54_msb_034[lut54_msb_addr[34][4:0]];
+      lut54_msb_read_data_bram[35] <= lut54_msb_035[lut54_msb_addr[35][4:0]];
+
+      lut76_lsb_read_data_bram[0]  <= lut76_lsb_000[lut76_lsb_addr[ 0][5:0]];
+      lut76_lsb_read_data_bram[1]  <= lut76_lsb_001[lut76_lsb_addr[ 1][5:0]];
+      lut76_lsb_read_data_bram[2]  <= lut76_lsb_002[lut76_lsb_addr[ 2][5:0]];
+      lut76_lsb_read_data_bram[3]  <= lut76_lsb_003[lut76_lsb_addr[ 3][5:0]];
+      lut76_lsb_read_data_bram[4]  <= lut76_lsb_004[lut76_lsb_addr[ 4][5:0]];
+      lut76_lsb_read_data_bram[5]  <= lut76_lsb_005[lut76_lsb_addr[ 5][5:0]];
+      lut76_lsb_read_data_bram[6]  <= lut76_lsb_006[lut76_lsb_addr[ 6][5:0]];
+      lut76_lsb_read_data_bram[7]  <= lut76_lsb_007[lut76_lsb_addr[ 7][5:0]];
+      lut76_lsb_read_data_bram[8]  <= lut76_lsb_008[lut76_lsb_addr[ 8][5:0]];
+      lut76_lsb_read_data_bram[9]  <= lut76_lsb_009[lut76_lsb_addr[ 9][5:0]];
+      lut76_lsb_read_data_bram[10] <= lut76_lsb_010[lut76_lsb_addr[10][5:0]];
+      lut76_lsb_read_data_bram[11] <= lut76_lsb_011[lut76_lsb_addr[11][5:0]];
+      lut76_lsb_read_data_bram[12] <= lut76_lsb_012[lut76_lsb_addr[12][5:0]];
+      lut76_lsb_read_data_bram[13] <= lut76_lsb_013[lut76_lsb_addr[13][5:0]];
+      lut76_lsb_read_data_bram[14] <= lut76_lsb_014[lut76_lsb_addr[14][5:0]];
+      lut76_lsb_read_data_bram[15] <= lut76_lsb_015[lut76_lsb_addr[15][5:0]];
+      lut76_lsb_read_data_bram[16] <= lut76_lsb_016[lut76_lsb_addr[16][5:0]];
+      lut76_lsb_read_data_bram[17] <= lut76_lsb_017[lut76_lsb_addr[17][5:0]];
+      lut76_lsb_read_data_bram[18] <= lut76_lsb_018[lut76_lsb_addr[18][5:0]];
+      lut76_lsb_read_data_bram[19] <= lut76_lsb_019[lut76_lsb_addr[19][5:0]];
+      lut76_lsb_read_data_bram[20] <= lut76_lsb_020[lut76_lsb_addr[20][5:0]];
+      lut76_lsb_read_data_bram[21] <= lut76_lsb_021[lut76_lsb_addr[21][5:0]];
+      lut76_lsb_read_data_bram[22] <= lut76_lsb_022[lut76_lsb_addr[22][5:0]];
+      lut76_lsb_read_data_bram[23] <= lut76_lsb_023[lut76_lsb_addr[23][5:0]];
+      lut76_lsb_read_data_bram[24] <= lut76_lsb_024[lut76_lsb_addr[24][5:0]];
+      lut76_lsb_read_data_bram[25] <= lut76_lsb_025[lut76_lsb_addr[25][5:0]];
+      lut76_lsb_read_data_bram[26] <= lut76_lsb_026[lut76_lsb_addr[26][5:0]];
+      lut76_lsb_read_data_bram[27] <= lut76_lsb_027[lut76_lsb_addr[27][5:0]];
+      lut76_lsb_read_data_bram[28] <= lut76_lsb_028[lut76_lsb_addr[28][5:0]];
+      lut76_lsb_read_data_bram[29] <= lut76_lsb_029[lut76_lsb_addr[29][5:0]];
+      lut76_lsb_read_data_bram[30] <= lut76_lsb_030[lut76_lsb_addr[30][5:0]];
+      lut76_lsb_read_data_bram[31] <= lut76_lsb_031[lut76_lsb_addr[31][5:0]];
+      lut76_lsb_read_data_bram[32] <= lut76_lsb_032[lut76_lsb_addr[32][5:0]];
+      lut76_lsb_read_data_bram[33] <= lut76_lsb_033[lut76_lsb_addr[33][5:0]];
+      lut76_lsb_read_data_bram[34] <= lut76_lsb_034[lut76_lsb_addr[34][5:0]];
+      lut76_lsb_read_data_bram[35] <= lut76_lsb_035[lut76_lsb_addr[35][5:0]];
+
+      lut76_csb_read_data_bram[0]  <= lut76_csb_000[lut76_csb_addr[ 0][5:0]];
+      lut76_csb_read_data_bram[1]  <= lut76_csb_001[lut76_csb_addr[ 1][5:0]];
+      lut76_csb_read_data_bram[2]  <= lut76_csb_002[lut76_csb_addr[ 2][5:0]];
+      lut76_csb_read_data_bram[3]  <= lut76_csb_003[lut76_csb_addr[ 3][5:0]];
+      lut76_csb_read_data_bram[4]  <= lut76_csb_004[lut76_csb_addr[ 4][5:0]];
+      lut76_csb_read_data_bram[5]  <= lut76_csb_005[lut76_csb_addr[ 5][5:0]];
+      lut76_csb_read_data_bram[6]  <= lut76_csb_006[lut76_csb_addr[ 6][5:0]];
+      lut76_csb_read_data_bram[7]  <= lut76_csb_007[lut76_csb_addr[ 7][5:0]];
+      lut76_csb_read_data_bram[8]  <= lut76_csb_008[lut76_csb_addr[ 8][5:0]];
+      lut76_csb_read_data_bram[9]  <= lut76_csb_009[lut76_csb_addr[ 9][5:0]];
+      lut76_csb_read_data_bram[10] <= lut76_csb_010[lut76_csb_addr[10][5:0]];
+      lut76_csb_read_data_bram[11] <= lut76_csb_011[lut76_csb_addr[11][5:0]];
+      lut76_csb_read_data_bram[12] <= lut76_csb_012[lut76_csb_addr[12][5:0]];
+      lut76_csb_read_data_bram[13] <= lut76_csb_013[lut76_csb_addr[13][5:0]];
+      lut76_csb_read_data_bram[14] <= lut76_csb_014[lut76_csb_addr[14][5:0]];
+      lut76_csb_read_data_bram[15] <= lut76_csb_015[lut76_csb_addr[15][5:0]];
+      lut76_csb_read_data_bram[16] <= lut76_csb_016[lut76_csb_addr[16][5:0]];
+      lut76_csb_read_data_bram[17] <= lut76_csb_017[lut76_csb_addr[17][5:0]];
+      lut76_csb_read_data_bram[18] <= lut76_csb_018[lut76_csb_addr[18][5:0]];
+      lut76_csb_read_data_bram[19] <= lut76_csb_019[lut76_csb_addr[19][5:0]];
+      lut76_csb_read_data_bram[20] <= lut76_csb_020[lut76_csb_addr[20][5:0]];
+      lut76_csb_read_data_bram[21] <= lut76_csb_021[lut76_csb_addr[21][5:0]];
+      lut76_csb_read_data_bram[22] <= lut76_csb_022[lut76_csb_addr[22][5:0]];
+      lut76_csb_read_data_bram[23] <= lut76_csb_023[lut76_csb_addr[23][5:0]];
+      lut76_csb_read_data_bram[24] <= lut76_csb_024[lut76_csb_addr[24][5:0]];
+      lut76_csb_read_data_bram[25] <= lut76_csb_025[lut76_csb_addr[25][5:0]];
+      lut76_csb_read_data_bram[26] <= lut76_csb_026[lut76_csb_addr[26][5:0]];
+      lut76_csb_read_data_bram[27] <= lut76_csb_027[lut76_csb_addr[27][5:0]];
+      lut76_csb_read_data_bram[28] <= lut76_csb_028[lut76_csb_addr[28][5:0]];
+      lut76_csb_read_data_bram[29] <= lut76_csb_029[lut76_csb_addr[29][5:0]];
+      lut76_csb_read_data_bram[30] <= lut76_csb_030[lut76_csb_addr[30][5:0]];
+      lut76_csb_read_data_bram[31] <= lut76_csb_031[lut76_csb_addr[31][5:0]];
+      lut76_csb_read_data_bram[32] <= lut76_csb_032[lut76_csb_addr[32][5:0]];
+      lut76_csb_read_data_bram[33] <= lut76_csb_033[lut76_csb_addr[33][5:0]];
+      lut76_csb_read_data_bram[34] <= lut76_csb_034[lut76_csb_addr[34][5:0]];
+      lut76_csb_read_data_bram[35] <= lut76_csb_035[lut76_csb_addr[35][5:0]];
+
+      lut76_msb_read_data_bram[0]  <= lut76_msb_000[lut76_msb_addr[ 0][4:0]];
+      lut76_msb_read_data_bram[1]  <= lut76_msb_001[lut76_msb_addr[ 1][4:0]];
+      lut76_msb_read_data_bram[2]  <= lut76_msb_002[lut76_msb_addr[ 2][4:0]];
+      lut76_msb_read_data_bram[3]  <= lut76_msb_003[lut76_msb_addr[ 3][4:0]];
+      lut76_msb_read_data_bram[4]  <= lut76_msb_004[lut76_msb_addr[ 4][4:0]];
+      lut76_msb_read_data_bram[5]  <= lut76_msb_005[lut76_msb_addr[ 5][4:0]];
+      lut76_msb_read_data_bram[6]  <= lut76_msb_006[lut76_msb_addr[ 6][4:0]];
+      lut76_msb_read_data_bram[7]  <= lut76_msb_007[lut76_msb_addr[ 7][4:0]];
+      lut76_msb_read_data_bram[8]  <= lut76_msb_008[lut76_msb_addr[ 8][4:0]];
+      lut76_msb_read_data_bram[9]  <= lut76_msb_009[lut76_msb_addr[ 9][4:0]];
+      lut76_msb_read_data_bram[10] <= lut76_msb_010[lut76_msb_addr[10][4:0]];
+      lut76_msb_read_data_bram[11] <= lut76_msb_011[lut76_msb_addr[11][4:0]];
+      lut76_msb_read_data_bram[12] <= lut76_msb_012[lut76_msb_addr[12][4:0]];
+      lut76_msb_read_data_bram[13] <= lut76_msb_013[lut76_msb_addr[13][4:0]];
+      lut76_msb_read_data_bram[14] <= lut76_msb_014[lut76_msb_addr[14][4:0]];
+      lut76_msb_read_data_bram[15] <= lut76_msb_015[lut76_msb_addr[15][4:0]];
+      lut76_msb_read_data_bram[16] <= lut76_msb_016[lut76_msb_addr[16][4:0]];
+      lut76_msb_read_data_bram[17] <= lut76_msb_017[lut76_msb_addr[17][4:0]];
+      lut76_msb_read_data_bram[18] <= lut76_msb_018[lut76_msb_addr[18][4:0]];
+      lut76_msb_read_data_bram[19] <= lut76_msb_019[lut76_msb_addr[19][4:0]];
+      lut76_msb_read_data_bram[20] <= lut76_msb_020[lut76_msb_addr[20][4:0]];
+      lut76_msb_read_data_bram[21] <= lut76_msb_021[lut76_msb_addr[21][4:0]];
+      lut76_msb_read_data_bram[22] <= lut76_msb_022[lut76_msb_addr[22][4:0]];
+      lut76_msb_read_data_bram[23] <= lut76_msb_023[lut76_msb_addr[23][4:0]];
+      lut76_msb_read_data_bram[24] <= lut76_msb_024[lut76_msb_addr[24][4:0]];
+      lut76_msb_read_data_bram[25] <= lut76_msb_025[lut76_msb_addr[25][4:0]];
+      lut76_msb_read_data_bram[26] <= lut76_msb_026[lut76_msb_addr[26][4:0]];
+      lut76_msb_read_data_bram[27] <= lut76_msb_027[lut76_msb_addr[27][4:0]];
+      lut76_msb_read_data_bram[28] <= lut76_msb_028[lut76_msb_addr[28][4:0]];
+      lut76_msb_read_data_bram[29] <= lut76_msb_029[lut76_msb_addr[29][4:0]];
+      lut76_msb_read_data_bram[30] <= lut76_msb_030[lut76_msb_addr[30][4:0]];
+      lut76_msb_read_data_bram[31] <= lut76_msb_031[lut76_msb_addr[31][4:0]];
+      lut76_msb_read_data_bram[32] <= lut76_msb_032[lut76_msb_addr[32][4:0]];
+      lut76_msb_read_data_bram[33] <= lut76_msb_033[lut76_msb_addr[33][4:0]];
+      lut76_msb_read_data_bram[34] <= lut76_msb_034[lut76_msb_addr[34][4:0]];
+      lut76_msb_read_data_bram[35] <= lut76_msb_035[lut76_msb_addr[35][4:0]];
    end
 
    // Read data out of the memories
    always_comb begin
       for (int k=0; k<NUM_BRAM; k=k+1) begin
-         lut54_read_data[k] = lut54_read_data_bram[k];
-         lut76_read_data[k] = lut76_read_data_bram[k];
+         lut54_lsb_read_data[k] = lut54_lsb_read_data_bram[k];
+         lut54_csb_read_data[k] = lut54_csb_read_data_bram[k];
+         lut54_msb_read_data[k] = lut54_msb_read_data_bram[k];
+         lut76_lsb_read_data[k] = lut76_lsb_read_data_bram[k];
+         lut76_csb_read_data[k] = lut76_csb_read_data_bram[k];
+         lut76_msb_read_data[k] = lut76_msb_read_data_bram[k];
       end      
    end
 
@@ -689,23 +977,35 @@ module dual_reduction_lut
       for (int k=0; k<LUT_NUM_ELEMENTS; k=k+1) begin
          for (int l=0; l<NUM_ELEMENTS; l=l+1) begin
             lut54_lsb_output[l][k] = '0;
-            lut76_lsb_output[l][k] = '0;
+            lut54_csb_output[l][k] = '0;
             lut54_msb_output[l][k] = '0;
+            lut76_lsb_output[l][k] = '0;
+            lut76_csb_output[l][k] = '0;
             lut76_msb_output[l][k] = '0;
          end
       end
       for (int k=0; k<LUT_NUM_ELEMENTS; k=k+1) begin
          for (int l=0; l<NONREDUNDANT_ELEMENTS+1; l=l+1) begin
+         
             if (l == 0) begin
-               lut54_msb_output[l][k][LOOK_UP_WIDTH-1:0] = '0;
-               lut76_msb_output[l][k][LOOK_UP_WIDTH-1:0] = '0;
+               lut54_csb_output[l][k][LOOK_UP_WIDTH-1:0] = '0;
+               lut76_csb_output[l][k][LOOK_UP_WIDTH-1:0] = '0;
             end else begin
-               lut54_msb_output[l][k][LOOK_UP_WIDTH-1:0] = lut54_read_data[k][((l-1)*WORD_LEN)+LOOK_UP_WIDTH+:LOOK_UP_WIDTH];
-               lut76_msb_output[l][k][LOOK_UP_WIDTH-1:0] = lut76_read_data[k][((l-1)*WORD_LEN)+LOOK_UP_WIDTH+:LOOK_UP_WIDTH];
+               lut54_csb_output[l][k][LOOK_UP_WIDTH-1:0] = lut54_csb_read_data[k][((l-1)*WORD_LEN)+LOOK_UP_WIDTH+:LOOK_UP_WIDTH];
+               lut76_csb_output[l][k][LOOK_UP_WIDTH-1:0] = lut76_csb_read_data[k][((l-1)*WORD_LEN)+LOOK_UP_WIDTH+:LOOK_UP_WIDTH];
             end
+
+            if (l == 0) begin
+               lut54_msb_output[l][k][(2*LOOK_UP_WIDTH)-1:0] = '0;
+               lut76_msb_output[l][k][(2*LOOK_UP_WIDTH)-1:0] = '0;
+            end else begin
+               lut54_msb_output[l][k][LOOK_UP_WIDTH-1:0] = lut54_msb_read_data[k][((l-1)*WORD_LEN)+(2*LOOK_UP_WIDTH)+:LOOK_UP_WIDTH];
+               lut76_msb_output[l][k][LOOK_UP_WIDTH-1:0] = lut76_msb_read_data[k][((l-1)*WORD_LEN)+(2*LOOK_UP_WIDTH)+:LOOK_UP_WIDTH];
+            end
+            
             if (l < NONREDUNDANT_ELEMENTS) begin
-                 lut54_lsb_output[l][k] = {{(BIT_LEN-WORD_LEN){1'b0}}, lut54_read_data[k][(l*WORD_LEN)+:WORD_LEN]};
-                 lut76_lsb_output[l][k] = {{(BIT_LEN-WORD_LEN){1'b0}}, lut76_read_data[k][(l*WORD_LEN)+:WORD_LEN]};
+                 lut54_lsb_output[l][k] = {{(BIT_LEN-WORD_LEN){1'b0}}, lut54_lsb_read_data[k][(l*WORD_LEN)+:WORD_LEN]};
+                 lut76_lsb_output[l][k] = {{(BIT_LEN-WORD_LEN){1'b0}}, lut76_lsb_read_data[k][(l*WORD_LEN)+:WORD_LEN]};
             end
          end
       end
@@ -714,8 +1014,10 @@ module dual_reduction_lut
    // Need above loops in combo block for Verilator to process
    always_comb begin
       lut54_lsb_data  = lut54_lsb_output;
-      lut76_lsb_data  = lut76_lsb_output;
+      lut54_csb_data  = lut54_csb_output;
       lut54_msb_data  = lut54_msb_output;
+      lut76_lsb_data  = lut76_lsb_output;
+      lut76_csb_data  = lut76_csb_output;
       lut76_msb_data  = lut76_msb_output;
    end
 endmodule
