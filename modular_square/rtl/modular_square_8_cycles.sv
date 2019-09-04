@@ -42,15 +42,15 @@ module modular_square_8_cycles
    localparam int EXTRA_ELEMENTS      = 2;
    localparam int NUM_MULTIPLIERS     = 1;
    localparam int EXTRA_MUL_TREE_BITS = 8;  // 7 for CSA of 66 and 1 for 2x AB terms
-   localparam int MUL_BIT_LEN         = ( ((BIT_LEN*2) - WORD_LEN) + EXTRA_MUL_TREE_BITS ); // 29b
-   localparam int GRID_BIT_LEN        =  MUL_BIT_LEN; // 29b
+   localparam int MUL_BIT_LEN         = ( ((BIT_LEN*2) - WORD_LEN) + EXTRA_MUL_TREE_BITS ); // 26b
+   localparam int GRID_BIT_LEN        =  MUL_BIT_LEN; // 26b
    localparam int GRID_SIZE           = ( MUL_NUM_ELEMENTS*2 ); // 132 elements in a 2K word
    localparam int LOOK_UP_WIDTH       = 6;
 
    localparam int ACC_ELEMENTS        = 36;  // 36 luts 
    localparam int ACC_EXTRA_ELEMENTS  = 1; // Addin the lower bits of the product
    localparam int ACC_EXTRA_BIT_LEN   = 8; // WAS: $clog2(ACC_ELEMENTS+ACC_EXTRA_ELEMENTS);
-   localparam int ACC_BIT_LEN         = ( BIT_LEN + ACC_EXTRA_BIT_LEN ); // 29b
+   localparam int ACC_BIT_LEN         = ( BIT_LEN + ACC_EXTRA_BIT_LEN ); // 25b
 
    localparam int IDLE                = 0,
                   CYCLE_0             = 1,
@@ -68,18 +68,18 @@ module modular_square_8_cycles
    logic [NUM_CYCLES-1:0]    curr_cycle; // 4 cycles
 
    // Multiplier selects in/out and values
-   logic [MUL_BIT_LEN-1:0]   mul_c[ GRID_SIZE ]; // 132 x 29b
-   logic [MUL_BIT_LEN-1:0]   mul_s[ GRID_SIZE ]; // 132 x 29b
+   logic [MUL_BIT_LEN-1:0]   mul_c[ GRID_SIZE ]; // 132 x 25b
+   logic [MUL_BIT_LEN-1:0]   mul_s[ GRID_SIZE ]; // 132 x 25b
 
-   logic [GRID_BIT_LEN:0]    grid_sum[GRID_SIZE]; // 132 x 30b 
+   logic [GRID_BIT_LEN:0]    grid_sum[GRID_SIZE]; // 132 x 26b 
    logic [BIT_LEN-1:0]       reduced_grid_sum[GRID_SIZE]; // 132 x 17b
 
-   logic [LOOK_UP_WIDTH-1:0] lut_addr0[ACC_ELEMENTS]; // 32 x 9b -- LBS6 of lower V54 words
-   logic [LOOK_UP_WIDTH-1:0] lut_addr1[ACC_ELEMENTS]; // 32 x 9b -- CSB6 of lower V54 words
-   logic [LOOK_UP_WIDTH-1:0] lut_addr2[ACC_ELEMENTS]; // 32 x 9b -- MSB5 of lower V54 words
-   logic [LOOK_UP_WIDTH-1:0] lut_addr3[ACC_ELEMENTS]; // 36 x 9b -- LSB6 of Upper V76 words
-   logic [LOOK_UP_WIDTH-1:0] lut_addr4[ACC_ELEMENTS]; // 36 x 9b -- CSB6 of upper V76 words
-   logic [LOOK_UP_WIDTH-1:0] lut_addr5[ACC_ELEMENTS]; // 36 x 9b -- MSB5 of upper V76 words
+   logic [LOOK_UP_WIDTH-1:0] lut_addr0[ACC_ELEMENTS]; // 32 x 6b -- LBS6 of lower V54 words
+   logic [LOOK_UP_WIDTH-1:0] lut_addr1[ACC_ELEMENTS]; // 32 x 6b -- CSB6 of lower V54 words
+   logic [LOOK_UP_WIDTH-1:0] lut_addr2[ACC_ELEMENTS]; // 32 x 6b -- MSB5 of lower V54 words
+   logic [LOOK_UP_WIDTH-1:0] lut_addr3[ACC_ELEMENTS]; // 36 x 6b -- LSB6 of Upper V76 words
+   logic [LOOK_UP_WIDTH-1:0] lut_addr4[ACC_ELEMENTS]; // 36 x 6b -- CSB6 of upper V76 words
+   logic [LOOK_UP_WIDTH-1:0] lut_addr5[ACC_ELEMENTS]; // 36 x 6b -- MSB5 of upper V76 words
    logic [BIT_LEN-1:0]       lut_data0[NUM_ELEMENTS][ACC_ELEMENTS]; // 66 words (of 36 luts) of 17b
    logic [BIT_LEN-1:0]       lut_data1[NUM_ELEMENTS][ACC_ELEMENTS]; // 66 words (of 36 luts) of 17b
    logic [BIT_LEN-1:0]       lut_data2[NUM_ELEMENTS][ACC_ELEMENTS]; // 66 words (of 36 luts) of 17b
@@ -87,11 +87,11 @@ module modular_square_8_cycles
    logic [BIT_LEN-1:0]       lut_data4[NUM_ELEMENTS][ACC_ELEMENTS]; // 66 words (of 36 luts) of 17b
    logic [BIT_LEN-1:0]       lut_data5[NUM_ELEMENTS][ACC_ELEMENTS]; // 66 words (of 36 luts) of 17b
 
-   logic [ACC_BIT_LEN-1:0]   acc_stack[NUM_ELEMENTS][205]; // 66 sumation columns, each of 205=3*32+3*36+1 of 29b
-   logic [ACC_BIT_LEN-1:0]   acc_C[NUM_ELEMENTS]; // 66 words of 17+12=29b
-   logic [ACC_BIT_LEN-1:0]   acc_S[NUM_ELEMENTS];
+   logic [ACC_BIT_LEN-1:0]   acc_stack[NUM_ELEMENTS][205]; // 66 sumation columns, each of 205=3*32+3*36+1 of 25b
+   logic [ACC_BIT_LEN-1:0]   acc_C[NUM_ELEMENTS]; // 66 words of 17+12=25b
+   logic [ACC_BIT_LEN-1:0]   acc_S[NUM_ELEMENTS]; // 66 words of 17+12=25b
 
-   logic [ACC_BIT_LEN:0]     acc_sum[NUM_ELEMENTS]; // 66 column sums of 30 bits
+   logic [ACC_BIT_LEN:0]     acc_sum[NUM_ELEMENTS]; // 66 column sums of 26b
    logic [BIT_LEN-1:0]       reduced_acc_sum[NUM_ELEMENTS]; // 66 column sums of 17b
 
    logic                     out_valid;
@@ -291,19 +291,19 @@ module square
      parameter int WORD_LEN        = 16,
 
      parameter int MUL_OUT_BIT_LEN  = (2*BIT_LEN),                       // 34b
-     parameter int COL_BIT_LEN      = (MUL_OUT_BIT_LEN - WORD_LEN + 1),  // 19b (extra +1 for prod*2 operations
-     parameter int EXTRA_TREE_BITS  = 10,                                //+10b to reduce 66 stages 
-     parameter int OUT_BIT_LEN      = COL_BIT_LEN + EXTRA_TREE_BITS      // 29b is our per column data path width
+     parameter int COL_BIT_LEN      = (MUL_OUT_BIT_LEN - WORD_LEN + 1),  // 19b include 1 for AB<<1
+     parameter int EXTRA_TREE_BITS  = 7,                                 // 7 bit for sum   
+     parameter int OUT_BIT_LEN      = COL_BIT_LEN + EXTRA_TREE_BITS      // 26b is our per column data path width
     )
    (
     input  logic                       clk,
     input  logic [BIT_LEN-1:0]         A[NUM_ELEMENTS],      //  66 x 17b
-    output logic [OUT_BIT_LEN-1:0]     C[NUM_ELEMENTS*2],    // 132 x 19b
-    output logic [OUT_BIT_LEN-1:0]     S[NUM_ELEMENTS*2]     // 132 x 29b
+    output logic [OUT_BIT_LEN-1:0]     C[NUM_ELEMENTS*2],    // 132 x 26b
+    output logic [OUT_BIT_LEN-1:0]     S[NUM_ELEMENTS*2]     // 132 x 26b
    );
 
-   localparam int GRID_PAD_SHORT   = EXTRA_TREE_BITS;                             // +10b padding
-   localparam int GRID_PAD_LONG    = (COL_BIT_LEN - WORD_LEN) + EXTRA_TREE_BITS;  // +13b padding
+   localparam int GRID_PAD_SHORT   = EXTRA_TREE_BITS;                             // +7b padding
+   localparam int GRID_PAD_LONG    = (COL_BIT_LEN - WORD_LEN) + EXTRA_TREE_BITS;  // +10b padding
 
    logic [MUL_OUT_BIT_LEN-1:0] mul_result[NUM_ELEMENTS*NUM_ELEMENTS];  // 66*66 = 4356 x 34b ( ~150K wires )
    logic [OUT_BIT_LEN-1:0]     grid[NUM_ELEMENTS*2][NUM_ELEMENTS*2];   // 132 rows of 132 columns x 29b ( ~500K wires! )
