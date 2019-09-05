@@ -360,7 +360,7 @@ module square
 
       for (i=1; i<(NUM_ELEMENTS*2)-1; i=i+1) begin : col_sums
          localparam integer CUR_ELEMENTS = (i <  NUM_ELEMENTS) ? i : NUM_ELEMENTS - int'(i/2);
-         localparam integer GRID_INDEX   = (i <= NUM_ELEMENTS) ? 0 : (i == NUM_ELEMENTS) ? 1 : ((i - NUM_ELEMENTS)*2);
+         localparam integer GRID_INDEX   = (i <= NUM_ELEMENTS) ? 0 : (i == NUM_ELEMENTS) ? 1 : ((i - NUM_ELEMENTS)*2+1);
 
          compressor_tree_3_to_2 #(.NUM_ELEMENTS(CUR_ELEMENTS),
                                   .BIT_LEN(OUT_BIT_LEN)
