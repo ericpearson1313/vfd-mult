@@ -361,22 +361,15 @@ module square
       for (i=1; i<(NUM_ELEMENTS*2)-1; i=i+1) begin : col_sums
          localparam integer CUR_ELEMENTS = (i <  NUM_ELEMENTS) ? i : NUM_ELEMENTS - int'(i/2);
          localparam integer GRID_INDEX   = (i <= NUM_ELEMENTS) ? 0 : (i == NUM_ELEMENTS) ? 1 : ((i - NUM_ELEMENTS)*2);
-         logic [OUT_BIT_LEN-1:0] C_col;
-         logic [OUT_BIT_LEN-1:0] S_col; 
 
          compressor_tree_3_to_2 #(.NUM_ELEMENTS(CUR_ELEMENTS),
                                   .BIT_LEN(OUT_BIT_LEN)
                                  )
             compressor_tree_3_to_2 (
                .terms(grid[i][GRID_INDEX:(GRID_INDEX + CUR_ELEMENTS - 1)]),
-               .C(C_col),
-               .S(S_col)
+               .C(C[i]),
+               .S(S[i])
             );
-
-         always_comb begin
-            C[i][OUT_BIT_LEN-1:0] = C_col[OUT_BIT_LEN-1:0];
-            S[i][OUT_BIT_LEN-1:0] = S_col[OUT_BIT_LEN-1:0];
-         end
       end
    endgenerate
 endmodule
