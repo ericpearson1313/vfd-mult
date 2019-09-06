@@ -14,7 +14,7 @@
 # limitations under the License.
 ################################################################################
 
-`define BUILD_NUMBER C014
+`define BUILD_NUMBER C015
 
 //Build phase A - base version from Supranational
 
@@ -34,6 +34,7 @@
 //  C012 : change to async lutram (clock will be very slow, but lets see)
 //  C013 : fixup lut shifted outputs (failed to route,  Phase 3.1.2 Run Global Routing for 12 hours)
 //  C014 : simulated base functional design (still 2207 of 2211 mults?)
+//  C015 : change from CSA to adder trees. simulated and trial synth done
 
 
 //Planned: Build D - Purpose: Performance
