@@ -67,7 +67,11 @@ PLACER_CONSTRS     = $(realpath ../placer_constrs.xdc)
 LDCLFLAGS += --xp "vivado_prop:run.impl_1.{STEPS.PLACE_DESIGN.TCL.PRE}=\
                    $(PLACER_CONSTRS)"
 
-LDCLFLAGS += --kernel_frequency 70
+LDCLFLAGS += --kernel_frequency 110
+
+#Add in Timing constraints
+TIMING_CONSTRS      = $(realpath ../timing_constrs.xdc)
+LDCLFLAGS = --xp "vivado_prop:run.impl_1.STEPS.OPT_DESIGN.TCL.PRE=$(TIMING_CONSTRS)"
 
 ############################################################################
 # AWS/SDAccel configuration
