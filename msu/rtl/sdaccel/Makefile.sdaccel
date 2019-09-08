@@ -36,6 +36,7 @@ LDCLFLAGS += -DMODULUS_DEF=$(MOD_LEN)\'d$(MODULUS)
 LDCLFLAGS += -DMSU_SQ_IN_BITS_DEF=$(SQ_IN_BITS)
 LDCLFLAGS += -DMSU_SQ_OUT_BITS_DEF=$(SQ_OUT_BITS)
 
+#LDCLFLAGS += -R2 
 
 LDCLFLAGS += --xp "vivado_prop:run.pfm_dynamic_vdf_1_0_synth_1.\
                    {STEPS.SYNTH_DESIGN.ARGS.FANOUT_LIMIT}={400}"
@@ -71,7 +72,7 @@ LDCLFLAGS += --kernel_frequency 161
 
 #Add in Timing constraints
 TIMING_CONSTRS      = $(realpath ../timing_constrs.xdc)
-LDCLFLAGS = --xp "vivado_prop:run.impl_1.STEPS.OPT_DESIGN.TCL.PRE=$(TIMING_CONSTRS)"
+LDCLFLAGS += --xp "vivado_prop:run.impl_1.STEPS.OPT_DESIGN.TCL.PRE=$(TIMING_CONSTRS)"
 
 ############################################################################
 # AWS/SDAccel configuration
