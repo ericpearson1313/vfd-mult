@@ -14,7 +14,7 @@
 # limitations under the License.
 ################################################################################
 
-`define BUILD_NUMBER C016
+`define BUILD_NUMBER C017
 
 //Build phase A - base version from Supranational
 
@@ -36,6 +36,7 @@
 //  C014 : simulated base functional design (still 2207 of 2211 mults?)
 //  C015 : change from CSA to adder trees. simulated and trial synth done, routed >36 Mhz
 //  C016 : use multi cycle path (4 cycle) as SDaccel does not support < 60 Mhz (our best target is 42 Mhz)
+//  C017 : 2 cycle clock enable
 
 
 //Planned: Build D - Purpose: Performance
