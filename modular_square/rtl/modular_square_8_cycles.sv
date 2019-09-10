@@ -144,8 +144,8 @@ module modular_square_8_cycles
    
    BUFGCE_1 sq_in_d1_clock_gate_ (
       .CE( start ),
-      .O( clk ),
-      .I( sq_in_d1_clk )
+      .I( clk ),
+      .O( sq_in_d1_clk )
    );
 
    always_ff @(posedge sq_in_d1_clk) begin
@@ -297,8 +297,8 @@ module modular_square_8_cycles
    
    BUFGCE_1 sq_out_clock_gate_ (
       .CE( curr_cycle[CYCLE_3] ),
-      .O( clk ),
-      .I( sq_out_clk )
+      .I( clk ),
+      .O( sq_out_clk )
    );
 
    // Always Flop output
