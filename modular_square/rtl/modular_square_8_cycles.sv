@@ -138,11 +138,20 @@ module modular_square_8_cycles
          start_d1                    <= start || (start_d1 && ~out_valid);
       end
       curr_cycle                     <= next_cycle;
-      if (start) begin
-         for (int k=0; k<NUM_ELEMENTS; k=k+1) begin
-            sq_in_d1[k][BIT_LEN-1:0] <= sq_in[k][BIT_LEN-1:0];
-         end 
-      end
+   end
+      
+   wire sq_in_d1_clk;
+   
+   BUFGCE_1 sq_in_d1_clock_gate_ (
+      .CE( start ),
+      .O( clk ),
+      .I( sq_in_d1_clk )
+   );
+
+   always_ff @(posedge sq_in_d1_clk) begin
+      for (int k=0; k<NUM_ELEMENTS; k=k+1) begin
+         sq_in_d1[k][BIT_LEN-1:0] <= sq_in[k][BIT_LEN-1:0];
+      end 
    end
 
    // Mux square input from external or loopback
@@ -284,12 +293,18 @@ module modular_square_8_cycles
                                {{(BIT_LEN-(ACC_BIT_LEN-WORD_LEN))-1{1'b0}}, acc_sum[NUM_ELEMENTS-2][ACC_BIT_LEN:WORD_LEN]};
    end
 
+   wire sq_out_clk;
+   
+   BUFGCE_1 sq_out_clock_gate_ (
+      .CE( curr_cycle[CYCLE_3] ),
+      .O( clk ),
+      .I( sq_out_clk )
+   );
+
    // Always Flop output
-   always_ff @(posedge clk) begin
-      if( curr_cycle[CYCLE_3] ) begin
-        for (int k=0; k<(NUM_ELEMENTS); k=k+1) begin
-            sq_out[k][BIT_LEN-1:0]      <= reduced_acc_sum[k][BIT_LEN-1:0];
-        end
+   always_ff @(posedge sq_out_clk) begin
+      for (int k=0; k<(NUM_ELEMENTS); k=k+1) begin
+         sq_out[k][BIT_LEN-1:0]      <= reduced_acc_sum[k][BIT_LEN-1:0];
       end
    end
 endmodule
