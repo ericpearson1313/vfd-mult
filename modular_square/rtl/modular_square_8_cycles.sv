@@ -53,9 +53,11 @@ module modular_square_8_cycles
    localparam int ACC_BIT_LEN         = ( BIT_LEN + ACC_EXTRA_BIT_LEN ); // 25b
 
    localparam int IDLE                = 0,
-                  CYCLE_0             = 1,
-                  CYCLE_1             = 2,
-                  NUM_CYCLES          = 3;
+                  PRECYC_0            = 1,
+                  PRECYC_1            = 2,
+                  CYCLE_0             = 3,
+                  CYCLE_1             = 4,
+                  NUM_CYCLES          = 5;
 
    // Flop incoming data from external source
    logic [BIT_LEN-1:0]       sq_in_d1[NUM_ELEMENTS];  // 66 x 17b
@@ -110,12 +112,14 @@ module modular_square_8_cycles
          unique case(1'b1)
             curr_cycle[IDLE]: begin
                if (start) begin
-                  next_cycle[CYCLE_0]      = 1'b1;
+                  next_cycle[PRECYC_0]      = 1'b1;
                end
                else begin
                   next_cycle[IDLE]         = 1'b1;
                end
             end
+            curr_cycle[PRECYC_0] : begin next_cycle[PRECYC_1] = 1'b1; end
+            curr_cycle[PRECYC_1] : begin next_cycle[CYCLE_0]  = 1'b1; end
             curr_cycle[CYCLE_0] : begin next_cycle[CYCLE_1] = 1'b1; end
             curr_cycle[CYCLE_1] : begin next_cycle[CYCLE_0] = 1'b1; out_valid = 1; end
          endcase
@@ -304,7 +308,7 @@ module square
 
      parameter int MUL_OUT_BIT_LEN  = (2*BIT_LEN),                       // 34b
      parameter int COL_BIT_LEN      = (MUL_OUT_BIT_LEN - WORD_LEN + 1),  // 19b include 1 for AB<<1
-     parameter int EXTRA_TREE_BITS  = 7,                                 // 7 bit for sum   
+     parameter int EXTRA_TREE_BITS  = 7,                                 // 7 bit for sum of 66 max  
      parameter int OUT_BIT_LEN      = COL_BIT_LEN + EXTRA_TREE_BITS      // 26b is our per column data path width
     )
    (
@@ -372,7 +376,7 @@ module square
 
       for (i=1; i<(NUM_ELEMENTS*2)-1; i=i+1) begin : col_sums
          localparam integer CUR_ELEMENTS = (i <  NUM_ELEMENTS) ? (i+1) : NUM_ELEMENTS*2 - i;
-         localparam integer GRID_INDEX   = (i <= NUM_ELEMENTS) ? 0 : ((i - NUM_ELEMENTS)*2+1);
+         localparam integer GRID_INDEX   = (i <  NUM_ELEMENTS) ? 0 : ((i - NUM_ELEMENTS)*2+1);
 
 //         compressor_tree_3_to_2 #(.NUM_ELEMENTS(CUR_ELEMENTS),
 //                                  .BIT_LEN(OUT_BIT_LEN)
