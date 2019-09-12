@@ -227,7 +227,7 @@ module modular_square_8_cycles
       end
       // V76 have 36 entries each
       for (int k=0; k<NUM_ELEMENTS; k=k+1) begin
-         for (int j=0; j<32; j=j+1) begin
+         for (int j=0; j<36; j=j+1) begin
             acc_stack[k][j+ 96][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data3[k][j][BIT_LEN-1:0]};
             acc_stack[k][j+132][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data4[k][j][BIT_LEN-1:0]};
             acc_stack[k][j+168][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data5[k][j][BIT_LEN-1:0]};
@@ -842,10 +842,10 @@ module full_reduction_lut
       lut54_lsb_read_data_bram[29] = lut54_lsb_029[lut54_lsb_addr[29][5:0]];
       lut54_lsb_read_data_bram[30] = lut54_lsb_030[lut54_lsb_addr[30][5:0]];
       lut54_lsb_read_data_bram[31] = lut54_lsb_031[lut54_lsb_addr[31][5:0]];
-      lut54_lsb_read_data_bram[32] = lut54_lsb_032[lut54_lsb_addr[32][5:0]];
-      lut54_lsb_read_data_bram[33] = lut54_lsb_033[lut54_lsb_addr[33][5:0]];
-      lut54_lsb_read_data_bram[34] = lut54_lsb_034[lut54_lsb_addr[34][5:0]];
-      lut54_lsb_read_data_bram[35] = lut54_lsb_035[lut54_lsb_addr[35][5:0]];
+      lut54_lsb_read_data_bram[32] = 1024'b0; //lut54_lsb_032[lut54_lsb_addr[32][5:0]];
+      lut54_lsb_read_data_bram[33] = 1024'b0; //lut54_lsb_033[lut54_lsb_addr[33][5:0]];
+      lut54_lsb_read_data_bram[34] = 1024'b0; //lut54_lsb_034[lut54_lsb_addr[34][5:0]];
+      lut54_lsb_read_data_bram[35] = 1024'b0; //lut54_lsb_035[lut54_lsb_addr[35][5:0]];
 
       lut54_csb_read_data_bram[0]  = lut54_csb_000[lut54_csb_addr[ 0][5:0]];
       lut54_csb_read_data_bram[1]  = lut54_csb_001[lut54_csb_addr[ 1][5:0]];
@@ -879,10 +879,10 @@ module full_reduction_lut
       lut54_csb_read_data_bram[29] = lut54_csb_029[lut54_csb_addr[29][5:0]];
       lut54_csb_read_data_bram[30] = lut54_csb_030[lut54_csb_addr[30][5:0]];
       lut54_csb_read_data_bram[31] = lut54_csb_031[lut54_csb_addr[31][5:0]];
-      lut54_csb_read_data_bram[32] = lut54_csb_032[lut54_csb_addr[32][5:0]];
-      lut54_csb_read_data_bram[33] = lut54_csb_033[lut54_csb_addr[33][5:0]];
-      lut54_csb_read_data_bram[34] = lut54_csb_034[lut54_csb_addr[34][5:0]];
-      lut54_csb_read_data_bram[35] = lut54_csb_035[lut54_csb_addr[35][5:0]];
+      lut54_csb_read_data_bram[32] = 1024'b0; //lut54_csb_032[lut54_csb_addr[32][5:0]];
+      lut54_csb_read_data_bram[33] = 1024'b0; //lut54_csb_033[lut54_csb_addr[33][5:0]];
+      lut54_csb_read_data_bram[34] = 1024'b0; //lut54_csb_034[lut54_csb_addr[34][5:0]];
+      lut54_csb_read_data_bram[35] = 1024'b0; //lut54_csb_035[lut54_csb_addr[35][5:0]];
 
       lut54_msb_read_data_bram[0]  = lut54_msb_000[lut54_msb_addr[ 0][4:0]];
       lut54_msb_read_data_bram[1]  = lut54_msb_001[lut54_msb_addr[ 1][4:0]];
@@ -916,10 +916,10 @@ module full_reduction_lut
       lut54_msb_read_data_bram[29] = lut54_msb_029[lut54_msb_addr[29][4:0]];
       lut54_msb_read_data_bram[30] = lut54_msb_030[lut54_msb_addr[30][4:0]];
       lut54_msb_read_data_bram[31] = lut54_msb_031[lut54_msb_addr[31][4:0]];
-      lut54_msb_read_data_bram[32] = lut54_msb_032[lut54_msb_addr[32][4:0]];
-      lut54_msb_read_data_bram[33] = lut54_msb_033[lut54_msb_addr[33][4:0]];
-      lut54_msb_read_data_bram[34] = lut54_msb_034[lut54_msb_addr[34][4:0]];
-      lut54_msb_read_data_bram[35] = lut54_msb_035[lut54_msb_addr[35][4:0]];
+      lut54_msb_read_data_bram[32] = 1024'b0; //lut54_msb_032[lut54_msb_addr[32][4:0]];
+      lut54_msb_read_data_bram[33] = 1024'b0; //lut54_msb_033[lut54_msb_addr[33][4:0]];
+      lut54_msb_read_data_bram[34] = 1024'b0; //lut54_msb_034[lut54_msb_addr[34][4:0]];
+      lut54_msb_read_data_bram[35] = 1024'b0; //lut54_msb_035[lut54_msb_addr[35][4:0]];
 
       lut76_lsb_read_data_bram[0]  = lut76_lsb_000[lut76_lsb_addr[ 0][5:0]];
       lut76_lsb_read_data_bram[1]  = lut76_lsb_001[lut76_lsb_addr[ 1][5:0]];
