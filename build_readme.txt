@@ -14,7 +14,7 @@
 # limitations under the License.
 ################################################################################
 
-`define BUILD_NUMBER C018
+`define BUILD_NUMBER C019
 
 //Build phase A - base version from Supranational
 
@@ -38,7 +38,7 @@
 //  C016 : use multi cycle path (4 cycle) as SDaccel does not support < 60 Mhz (our best target is 42 Mhz)
 //  C017 : 2 cycle clock enable
 //  C018 : add start_d1 as multi-cycle source
-
+//  C019 : functional, 2 pre-cycles, then 2 cycle with multi-cycle paths
 
 //Planned: Build D - Purpose: Performance
 //Planned: Build E - multi-cycle funcitonallity
