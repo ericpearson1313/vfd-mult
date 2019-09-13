@@ -55,9 +55,13 @@ module modular_square_8_cycles
    localparam int IDLE                = 0,
                   PRECYC_0            = 1,
                   PRECYC_1            = 2,
-                  CYCLE_0             = 3,
-                  CYCLE_1             = 4,
-                  NUM_CYCLES          = 5;
+                  PRECYC_2            = 3,
+                  PRECYC_3            = 4,
+                  CYCLE_0             = 5,
+                  CYCLE_1             = 6,
+                  CYCLE_2             = 7,
+                  CYCLE_3             = 8,
+                  NUM_CYCLES          = 9;
 
    // Flop incoming data from external source
    logic [BIT_LEN-1:0]       sq_in_d1[NUM_ELEMENTS];  // 66 x 17b
@@ -119,9 +123,13 @@ module modular_square_8_cycles
                end
             end
             curr_cycle[PRECYC_0] : begin next_cycle[PRECYC_1] = 1'b1; end
-            curr_cycle[PRECYC_1] : begin next_cycle[CYCLE_0]  = 1'b1; end
+            curr_cycle[PRECYC_1] : begin next_cycle[PRECYC_2] = 1'b1; end
+            curr_cycle[PRECYC_2] : begin next_cycle[PRECYC_3] = 1'b1; end
+            curr_cycle[PRECYC_3] : begin next_cycle[CYCLE_0]  = 1'b1; end
             curr_cycle[CYCLE_0] : begin next_cycle[CYCLE_1] = 1'b1; end
-            curr_cycle[CYCLE_1] : begin next_cycle[CYCLE_0] = 1'b1; out_valid = 1; end
+            curr_cycle[CYCLE_1] : begin next_cycle[CYCLE_2] = 1'b1; end
+            curr_cycle[CYCLE_2] : begin next_cycle[CYCLE_3] = 1'b1; end
+            curr_cycle[CYCLE_3] : begin next_cycle[CYCLE_0] = 1'b1; out_valid = 1; end
          endcase
       end
    end
@@ -286,7 +294,7 @@ module modular_square_8_cycles
 
    // Always Flop output
    always_ff @(posedge clk) begin
-      if( curr_cycle[CYCLE_1] ) begin
+      if( curr_cycle[CYCLE_3] ) begin
         for (int k=0; k<(NUM_ELEMENTS); k=k+1) begin
             sq_out[k][BIT_LEN-1:0]      <= reduced_acc_sum[k][BIT_LEN-1:0];
         end
