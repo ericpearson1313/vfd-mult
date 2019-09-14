@@ -14,7 +14,7 @@
 # limitations under the License.
 ################################################################################
 
-`define BUILD_NUMBER C020
+`define BUILD_NUMBER C021
 
 //Build phase A - base version from Supranational
 
@@ -40,6 +40,7 @@
 //  C018 : add start_d1 as multi-cycle source
 //  C019 : functional, 2 pre-cycles, then 2 cycle with multi-cycle paths
 //  C020 : functional, 4 pre-cycles, then 4 cycle with multi-cycle paths, target 144 Mhz
+//  C021 : exit shutdown to save power, 4 pre-cycles, then 4 cycle with multi-cycle paths, target 144 Mhz
 
 //Planned: Build D - Purpose: Performance
 //Planned: Build E - multi-cycle funcitonallity
