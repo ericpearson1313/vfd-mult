@@ -45,6 +45,7 @@
 
 //Planned: Build D - Purpose: Performance
 //  D022 : add power save counter to force 32 cycle rate for test
+//  D023 : conservative 1 mSec linear power ramp to max
 
 
 
