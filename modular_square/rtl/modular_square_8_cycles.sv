@@ -73,6 +73,7 @@ module modular_square_8_cycles
    // Cycle number state machine
    logic [NUM_CYCLES-1:0]    next_cycle; // 4 cycles
    logic [NUM_CYCLES-1:0]    curr_cycle; // 4 cycles
+   logic [4:0]               power_count; // limit average power
 
    // Multiplier selects in/out and values
    logic [MUL_BIT_LEN-1:0]   mul_c[ GRID_SIZE ]; // 132 x 25b
@@ -126,7 +127,13 @@ module modular_square_8_cycles
             curr_cycle[PRECYC_1] : begin next_cycle[PRECYC_2] = 1'b1; end
             curr_cycle[PRECYC_2] : begin next_cycle[PRECYC_3] = 1'b1; end
             curr_cycle[PRECYC_3] : begin next_cycle[CYCLE_0]  = 1'b1; end
-            curr_cycle[CYCLE_0] : begin next_cycle[CYCLE_1] = 1'b1; end
+            curr_cycle[CYCLE_0] : begin 
+              if( power_count == 5'd31 ) begin
+                next_cycle[CYCLE_1] = 1'b1;
+              end else begin
+                next_cycle[CYCLE_0] = 1'b1;
+              end
+            end
             curr_cycle[CYCLE_1] : begin next_cycle[CYCLE_2] = 1'b1; end
             curr_cycle[CYCLE_2] : begin next_cycle[CYCLE_3] = 1'b1; end
             curr_cycle[CYCLE_3] : begin next_cycle[CYCLE_0] = 1'b1; out_valid = 1; end
@@ -140,10 +147,12 @@ module modular_square_8_cycles
       if (reset) begin
          valid                       <= 1'b0;
          start_d1                    <= 1'b0;
+         power_count                 <= 5'b0;
       end
       else begin
          valid                       <= out_valid;
          start_d1                    <= start || (start_d1 && ~out_valid);
+         power_count                 <= power_count + 5'b1;
       end
       curr_cycle                     <= next_cycle;
       if (start) begin
