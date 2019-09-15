@@ -14,7 +14,7 @@
 # limitations under the License.
 ################################################################################
 
-`define BUILD_NUMBER C021
+`define BUILD_NUMBER D022
 
 //Build phase A - base version from Supranational
 
@@ -41,6 +41,11 @@
 //  C019 : functional, 2 pre-cycles, then 2 cycle with multi-cycle paths
 //  C020 : functional, 4 pre-cycles, then 4 cycle with multi-cycle paths, target 144 Mhz
 //  C021 : exit shutdown to save power, 4 pre-cycles, then 4 cycle with multi-cycle paths, target 144 Mhz
+//  Transistion to next phase. We have density and functionality, no changes planned
 
 //Planned: Build D - Purpose: Performance
-//Planned: Build E - multi-cycle funcitonallity
+//  D022 : add power save counter to force 32 cycle rate for test
+
+
+
+//Planned: Build E - timing closure experiments
