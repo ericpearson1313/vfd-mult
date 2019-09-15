@@ -52,6 +52,10 @@ module modular_square_8_cycles
    localparam int ACC_EXTRA_BIT_LEN   = 8; // WAS: $clog2(ACC_ELEMENTS+ACC_EXTRA_ELEMENTS);
    localparam int ACC_BIT_LEN         = ( BIT_LEN + ACC_EXTRA_BIT_LEN ); // 25b
 
+   localparam int PULSE_ENERGY        = 'h80000;  // energy for 1 modsq, (guess 2uJ)
+   localparam int MAX_POWER           = 'h20000;   // Max Power, about 64 Watts, must result in 4 cycles/pulse
+   localparam int POWER_RAMP          = 'h1; // 'h100;     // Normal is 1, use larger for sims
+      
    localparam int IDLE                = 0,
                   PRECYC_0            = 1,
                   PRECYC_1            = 2,
@@ -73,7 +77,8 @@ module modular_square_8_cycles
    // Cycle number state machine
    logic [NUM_CYCLES-1:0]    next_cycle; // 4 cycles
    logic [NUM_CYCLES-1:0]    curr_cycle; // 4 cycles
-   logic [4:0]               power_count; // limit average power
+   logic [20:0]              power_count;  // power setpoint
+   logic [20:0]              energy_error; // accumulated energy error
 
    // Multiplier selects in/out and values
    logic [MUL_BIT_LEN-1:0]   mul_c[ GRID_SIZE ]; // 132 x 25b
@@ -128,8 +133,8 @@ module modular_square_8_cycles
             curr_cycle[PRECYC_2] : begin next_cycle[PRECYC_3] = 1'b1; end
             curr_cycle[PRECYC_3] : begin next_cycle[CYCLE_0]  = 1'b1; end
             curr_cycle[CYCLE_0] : begin 
-              if( power_count == 5'd31 ) begin
-                next_cycle[CYCLE_1] = 1'b1;
+              if( energy_error >= PULSE_ENERGY ) begin
+                next_cycle[CYCLE_1] = 1'b1; // fire a pulse when budget allows
               end else begin
                 next_cycle[CYCLE_0] = 1'b1;
               end
@@ -147,12 +152,14 @@ module modular_square_8_cycles
       if (reset) begin
          valid                       <= 1'b0;
          start_d1                    <= 1'b0;
-         power_count                 <= 5'b0;
+         power_count                 <= 21'b0;
+         energy_error                <= 21'b0;
       end
       else begin
          valid                       <= out_valid;
          start_d1                    <= start || (start_d1 && ~out_valid);
-         power_count                 <= power_count + 5'b1;
+         power_count  <= power_count  + (( power_count < MAX_POWER ) ? POWER_RAMP : 0 ); 
+         energy_error <= energy_error + power_count - (( energy_error >= PULSE_ENERGY ) ? PULSE_ENERGY : 0 );
       end
       curr_cycle                     <= next_cycle;
       if (start) begin
