@@ -14,7 +14,7 @@
 # limitations under the License.
 ################################################################################
 
-`define BUILD_NUMBER D022
+`define BUILD_NUMBER E024
 
 //Build phase A - base version from Supranational
 
@@ -45,7 +45,10 @@
 
 //Planned: Build D - Purpose: Performance
 //  D022 : add power save counter to force 32 cycle rate for test
-//  D023 : conservative 1 mSec linear power ramp to max
+//  D023 : conservative 1 mSec linear power ramp to max  <-- ** AWESOME ** but AWS power limit exceeded
+
+//Major Change *** AWS POower limit exceeded ***
+//  E024 : address power concern, change V76 to BRAMs and add new multi-cycle paths for bram regs. Should save 140K luts. Sim OK
 
 
 
