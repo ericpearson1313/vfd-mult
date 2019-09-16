@@ -14,7 +14,7 @@
 # limitations under the License.
 ################################################################################
 
-`define BUILD_NUMBER E024
+`define BUILD_NUMBER E025
 
 //Build phase A - base version from Supranational
 
@@ -49,7 +49,7 @@
 
 //Major Change *** AWS POower limit exceeded ***
 //  E024 : address power concern, change V76 to BRAMs and add new multi-cycle paths for bram regs. Should save 140K luts. Sim OK
-
+//  E025 : fix some mcycle constraints, and move lut regs into reduciton module so synth can recongize brams
 
 
 //Planned: Build E - timing closure experiments
