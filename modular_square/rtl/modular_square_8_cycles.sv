@@ -237,7 +237,7 @@ module modular_square_8_cycles
    always_comb begin
       // zero acc array   
       for (int k=0; k<NUM_ELEMENTS; k=k+1) begin
-         for (int j=0; j<205; j=j+1) begin
+         for (int j=0; j<169; j=j+1) begin
             acc_stack[k][j][ACC_BIT_LEN-1:0] = 0;
          end
       end
