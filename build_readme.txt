@@ -14,7 +14,7 @@
 # limitations under the License.
 ################################################################################
 
-`define BUILD_NUMBER E026
+`define BUILD_NUMBER E027
 
 //Build phase A - base version from Supranational
 
@@ -51,5 +51,6 @@
 //  E024 : address power concern, change V76 to BRAMs and add new multi-cycle paths for bram regs. Should save 140K luts. Sim OK
 //  E025 : fix some mcycle constraints, and move lut regs into reduciton module so synth can recongize brams
 //  E026 : fully register product stage, power gate each cycle, change freq to 125 Mhz
+//  E027 : Change V5 over to BRAMs
 
 //Planned: Build E - timing closure experiments
