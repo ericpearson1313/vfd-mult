@@ -1,0 +1,29 @@
+VDF FPGA Competition Submission Form
+
+To submit your design:
+- submit an official team entry form
+- fill in the fields below
+- create your final commit with git signoff:
+    git commit -s -m "round 1 entry"
+- email your final repo + commit to hello@vdfalliance.org
+
+Team name: Eric Pearson
+Expected result (avg ns/square): 29.4 nS
+Design documentation (below):
+- 2 cycle design:
+	- Stage1: full 1024 bit async square unit (66x17b) with adder tree
+	- Stage2: Full reduction lut (Mixed BRAM and LUTRAM) and final adder tree
+- Multi-cycle timing paths used:
+    - 2 cycles per stage (4 cycles total) as min AWS F1 clock is 87.5 Mhz
+		- enables used for registers
+	- Added 4 pre-cycles to enable 6 cycles of propagation for sq_in_d1 and start_d1 signals
+- AWS F1 power limits:
+    - reset modsqr once the desired number of squares completed, to reduce power when not operating.
+	- 1ms ramp to full power, as AWS has a max rate of increase even if under max power
+		- gated 4 cycle state machine advance based on reaching integrated power level.
+	- used maximum number of BRAMs to reduce logic.
+- Place & Route:
+    - replaced CSA trees with Adder trees.
+	- used a sqare multiplier uses ~50% of the multipliers
+	- used placement directive: tba
+
