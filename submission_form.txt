@@ -1,0 +1,21 @@
+VDF FPGA Competition Submission Form
+
+To submit your design:
+- submit an official team entry form
+- fill in the fields below
+- create your final commit with git signoff:
+    git commit -s -m "round 1 entry"
+- email your final repo + commit to hello@vdfalliance.org
+
+Team name: Eric Pearson
+Expected result (avg ns/square): 32.0 nS, ( 4 cyc @ 125 Mhz )
+Design documentation (below):
+- Used same numeric representation, word length, and interface as in the provided reference.
+- unrolled 2 stage pipeline, with intermediate squared value register.
+- Stage1: Parallel 1Kbit square unit based on 17bit DSP multiplied, with CARRY8 adder tree
+- Stage2: Parallel 2Kbit product modulus with 9bit BRAM and 6bit LUTRAM reduction roms, and CARRY8 adder tree
+- Stace machine controlled stage register enables and valid signals to give 2 clock cycles per stage. Multi-cycle timing constraints 
+- State machine intialization delay of 4 cycles for starting value paths. Multi-cycle timing constraints
+- Power savings by reset of modsqr unit upon completion of itterations.
+- Power ramp up of 1ms by integrated ramp pulse modulated delay of state machine.
+
