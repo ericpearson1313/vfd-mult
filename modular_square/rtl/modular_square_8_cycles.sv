@@ -50,8 +50,8 @@ module modular_square_8_cycles
    localparam int ACC_EXTRA_BIT_LEN   = 8; // WAS: $clog2(ACC_ELEMENTS+ACC_EXTRA_ELEMENTS);
    localparam int ACC_BIT_LEN         = ( BIT_LEN + ACC_EXTRA_BIT_LEN ); // 25b
 
-   localparam int PULSE_ENERGY        = 'h60000;  // energy for 1 modsq stage (each 0.5), (guess 1uJ)
-   localparam int MAX_POWER           = 'h20000;   // Max Power, about 64 Watts, must result in 3 cycles/pulse
+   localparam int PULSE_ENERGY        = 'h70000;  // energy for 1 modsq stage (each 0.5), (guess 1uJ)
+   localparam int MAX_POWER           = 'h20000;   // Max Power, about 64 Watts, must result in 3.5 cycles/pulse
    localparam int POWER_RAMP          = 'h1; //'h100;     // Normal is 1, use larger for sims
       
    localparam int IDLE                = 0,
@@ -61,13 +61,16 @@ module modular_square_8_cycles
                   PRECYC_3            = 4,
                   PRECYC_4            = 5,
                   PRECYC_5            = 6,
-                  CYCLE_0             = 7,
-                  CYCLE_1             = 8,
-                  CYCLE_2             = 9,
-                  CYCLE_3             = 10,
-                  CYCLE_4             = 11,
-                  CYCLE_5             = 12,
-                  NUM_CYCLES          = 13;
+                  PRECYC_6            = 7,
+                  CYCLE_0             = 8,
+                  CYCLE_1             = 9,
+                  CYCLE_2             = 10,
+                  CYCLE_3             = 11,
+                  CYCLE_4             = 12,
+                  CYCLE_4B            = 13,
+                  CYCLE_5             = 14,
+                  CYCLE_6             = 15,
+                  NUM_CYCLES          = 16;
 
    // Flop incoming data from external source
    logic [BIT_LEN-1:0]       sq_in_d1[NUM_ELEMENTS];  // 66 x 17b
@@ -140,10 +143,11 @@ module modular_square_8_cycles
             curr_cycle[PRECYC_2] : begin next_cycle[PRECYC_3] = 1'b1; end
             curr_cycle[PRECYC_3] : begin next_cycle[PRECYC_4]  = 1'b1; end
             curr_cycle[PRECYC_4] : begin next_cycle[PRECYC_5]  = 1'b1; end
-            curr_cycle[PRECYC_5] : begin next_cycle[CYCLE_0]  = 1'b1; end
+            curr_cycle[PRECYC_5] : begin next_cycle[PRECYC_6]  = 1'b1; end
+            curr_cycle[PRECYC_6] : begin next_cycle[CYCLE_0]  = 1'b1; end
             curr_cycle[CYCLE_0] : begin 
               if( power_ok ) begin
-                next_cycle[CYCLE_1] = 1'b1; // fire 1st phase
+                next_cycle[CYCLE_1] = 1'b1; 
               end else begin
                 next_cycle[CYCLE_0] = 1'b1;
               end
@@ -152,13 +156,21 @@ module modular_square_8_cycles
             curr_cycle[CYCLE_2] : begin next_cycle[CYCLE_3] = 1'b1; end
             curr_cycle[CYCLE_3] : begin 
               if( power_ok ) begin
-                next_cycle[CYCLE_4] = 1'b1; // fire 2nd phase
+                next_cycle[CYCLE_4B] = 1'b1; 
               end else begin
-                next_cycle[CYCLE_3] = 1'b1;
+                next_cycle[CYCLE_4] = 1'b1; 
               end
             end
-            curr_cycle[CYCLE_4] : begin next_cycle[CYCLE_5] = 1'b1; end
-            curr_cycle[CYCLE_5] : begin next_cycle[CYCLE_0] = 1'b1; out_valid = 1; end
+            curr_cycle[CYCLE_4] : begin 
+              if( power_ok ) begin
+                next_cycle[CYCLE_5] = 1'b1; 
+              end else begin
+                next_cycle[CYCLE_4] = 1'b1;
+              end
+            end
+            curr_cycle[CYCLE_4B] : begin next_cycle[CYCLE_5] = 1'b1; end
+            curr_cycle[CYCLE_5] : begin next_cycle[CYCLE_6] = 1'b1; end
+            curr_cycle[CYCLE_6] : begin next_cycle[CYCLE_0] = 1'b1; out_valid = 1; end
          endcase
       end
    end
@@ -227,7 +239,7 @@ module modular_square_8_cycles
    end
  
    always_ff @(posedge clk) begin
-      if( curr_cycle[CYCLE_2] ) begin
+      if( curr_cycle[CYCLE_3] ) begin
          reduced_grid_sum_reg <= reduced_grid_sum;
       end
    end
@@ -247,7 +259,7 @@ module modular_square_8_cycles
    
    // Instantiate memory holding reduction LUTs
    full_reduction_lut reduction_lut_ (
-                     .ren( curr_cycle[CYCLE_2] ), // enable Lut regs
+                     .ren( curr_cycle[CYCLE_3] ), // enable Lut regs
                      .clk( clk ), // brams must be clocked, but not lutrams :)
                      .lut4_lsb_addr( lut_addr0 ),
                      .lut4_csb_addr( lut_addr1 ),
@@ -347,7 +359,7 @@ module modular_square_8_cycles
 
    // Always Flop output
    always_ff @(posedge clk) begin
-      if( curr_cycle[CYCLE_5] ) begin
+      if( curr_cycle[CYCLE_6] ) begin
         for (int k=0; k<(NUM_ELEMENTS); k=k+1) begin
             sq_out[k][BIT_LEN-1:0]      <= reduced_acc_sum[k][BIT_LEN-1:0];
         end
