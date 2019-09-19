@@ -239,7 +239,7 @@ module modular_square_8_cycles
    end
  
    always_ff @(posedge clk) begin
-      if( curr_cycle[CYCLE_3] ) begin
+      if( curr_cycle[CYCLE_2] ) begin
          reduced_grid_sum_reg <= reduced_grid_sum;
       end
    end
@@ -259,7 +259,7 @@ module modular_square_8_cycles
    
    // Instantiate memory holding reduction LUTs
    full_reduction_lut reduction_lut_ (
-                     .ren( curr_cycle[CYCLE_3] ), // enable Lut regs
+                     .ren( curr_cycle[CYCLE_2] ), // enable Lut regs
                      .clk( clk ), // brams must be clocked, but not lutrams :)
                      .lut4_lsb_addr( lut_addr0 ),
                      .lut4_csb_addr( lut_addr1 ),

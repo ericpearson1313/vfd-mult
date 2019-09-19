@@ -14,7 +14,7 @@ Design documentation (below):
 - True 2 stage pipeline, with intermediate squared value register.
 - Stage1: Parallel 1Kbit square unit based on 17bit DSP multiplied, with CARRY8 adder tree
 - Stage2: Parallel 2Kbit product modulus with 9bit BRAM and 6bit LUTRAM reduction roms, and CARRY8 adder tree
-- Stace machine controlled stage register enables and valid signals to give 4(3) clock cycles per stage. Multi-cycle timing constraints 
+- Stace machine controlled stage register enables and valid signals to give 3(4) clock cycles per stage. Multi-cycle timing constraints 
 - State machine intialization delay full itteration for starting value paths. Multi-cycle timing constraints
 - Power savings by reset of modsqr unit upon completion of itterations.
 - Power ramp up of 1ms by integrated ramp pulse modulated delay of state machine.
