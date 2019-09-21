@@ -8,22 +8,14 @@ To submit your design:
 - email your final repo + commit to hello@vdfalliance.org
 
 Team name: Eric Pearson
-Expected result (avg ns/square): 29.4 nS
+Expected result (avg ns/square): 32.0 nS, ( 4 cyc @ 125 Mhz )
 Design documentation (below):
-- 2 cycle design:
-	- Stage1: full 1024 bit async square unit (66x17b) with adder tree
-	- Stage2: Full reduction lut (Mixed BRAM and LUTRAM) and final adder tree
-- Multi-cycle timing paths used:
-    - 2 cycles per stage (4 cycles total) as min AWS F1 clock is 87.5 Mhz
-		- enables used for registers
-	- Added 4 pre-cycles to enable 6 cycles of propagation for sq_in_d1 and start_d1 signals
-- AWS F1 power limits:
-    - reset modsqr once the desired number of squares completed, to reduce power when not operating.
-	- 1ms ramp to full power, as AWS has a max rate of increase even if under max power
-		- gated 4 cycle state machine advance based on reaching integrated power level.
-	- used maximum number of BRAMs to reduce logic.
-- Place & Route:
-    - replaced CSA trees with Adder trees.
-	- used a sqare multiplier uses ~50% of the multipliers
-	- used placement directive: tba
+- Used same numeric representation, word length, and interface as in the provided reference.
+- unrolled 2 stage pipeline, with intermediate squared value register.
+- Stage1: Parallel 1Kbit square unit based on 17bit DSP multiplied, with CARRY8 adder tree
+- Stage2: Parallel 2Kbit product modulus with 9bit BRAM and 6bit LUTRAM reduction roms, and CARRY8 adder tree
+- Stace machine controlled stage register enables and valid signals to give 2 clock cycles per stage. Multi-cycle timing constraints 
+- State machine intialization delay of 4 cycles for starting value paths. Multi-cycle timing constraints
+- Power savings by reset of modsqr unit upon completion of itterations.
+- Power ramp up of 1ms by integrated ramp pulse modulated delay of state machine.
 
