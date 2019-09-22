@@ -47,7 +47,6 @@ module modular_square_wrapper
    logic               start_stages[IO_STAGES];
    logic [BIT_LEN-1:0] sq_in_stages[IO_STAGES][NUM_ELEMENTS];
    logic [BIT_LEN-1:0] sq_out_stages[IO_STAGES][NUM_ELEMENTS];
-   logic               valid_stages[IO_STAGES];
 
    logic mmcm_fb;
    logic modsq_clk;
@@ -89,15 +88,12 @@ module modular_square_wrapper
       end
    endgenerate
 
-   assign valid  = valid_stages[IO_STAGES-1];
-
    // Create the pipeline
    generate
       for(j = 1; j < IO_STAGES; j++) begin
          always_ff @(posedge clk) begin
             sq_in_stages[j]  <= sq_in_stages[j-1];
             sq_out_stages[j] <= sq_out_stages[j-1];
-            valid_stages[j]  <= valid_stages[j-1];
          end
       end
    endgenerate

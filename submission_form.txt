@@ -7,16 +7,18 @@ To submit your design:
     git commit -s -m "round 1 entry"
 - email your final repo + commit to hello@vdfalliance.org
 
-Team name: Eric Pearson
+Team name: Eric
 Expected result (avg ns/square): 31.7 nS, ( 4 cyc @ (125*102/101) Mhz )
 Design documentation (below):
 - Used same numeric representation, word length, and interface as in the provided reference.
-- unrolled 2 stage pipeline, with intermediate squared value register.
-- Stage1: Parallel 1Kbit square unit based on 17bit DSP multiplied, with CARRY8 adder tree
-- Stage2: Parallel 2Kbit product modulus with 9bit BRAM and 6bit LUTRAM reduction roms, and CARRY8 adder tree
-- Stace machine controlled stage register enables and valid signals to give 2 clock cycles per stage. Multi-cycle timing constraints 
+- unrolled as 2 stage pipeline, with lut address = square product register.
+- Stage1: Parallel 1Kbit square unit based on 17bit DSP multiplier, with native CARRY8 adder trees
+- Stage2: Parallel 2Kbit product modulus with both 8/9bit BRAMs and 5/6bit LUTRAM based word reduction roms, and native CARRY8 adder trees
+- State machine controlled stage register enables and valid signals to give 2 clock cycles per stage. Multi-cycle timing constraints 
 - State machine intialization delay of 4 cycles for starting value paths. Multi-cycle timing constraints
 - Power savings by reset of modsqr unit upon completion of itterations.
-- Power ramp up of 1ms by integrated ramp pulse modulated delay of state machine.
-- MMCM pll clock multiplier (102/101) and clock domain crossing in wrapper
+- Power ramp up of 1ms by integrated ramp pulse modulated delay of state machine register enables.
+- MMCM pll clock multiplier ( 102/101 < 101% ) and clock domain crossing in wrapper. Max-delay timing constraints.
+
+
 
