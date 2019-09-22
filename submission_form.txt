@@ -8,7 +8,7 @@ To submit your design:
 - email your final repo + commit to hello@vdfalliance.org
 
 Team name: Eric Pearson
-Expected result (avg ns/square): 32.0 nS, ( 4 cyc @ 125 Mhz )
+Expected result (avg ns/square): 31.7 nS, ( 4 cyc @ (125*102/101) Mhz )
 Design documentation (below):
 - Used same numeric representation, word length, and interface as in the provided reference.
 - unrolled 2 stage pipeline, with intermediate squared value register.
@@ -18,4 +18,5 @@ Design documentation (below):
 - State machine intialization delay of 4 cycles for starting value paths. Multi-cycle timing constraints
 - Power savings by reset of modsqr unit upon completion of itterations.
 - Power ramp up of 1ms by integrated ramp pulse modulated delay of state machine.
+- MMCM pll clock multiplier (102/101) and clock domain crossing in wrapper
 
