@@ -119,10 +119,10 @@ module modular_square_wrapper
 always_ff @(posedge clk) begin
     rst_hold <= reset | ( rst_hold & !rst_fb_cdc2 );
     rst_fb_cdc2 <= rst_fb_cdc1;
-    rst_fb_cdc1 <= modsq_rst_cdc2;
+    rst_fb_cdc1 <= modsq_rst_cdc2; // CDC
 end
 always_ff @(posedge modsq_clk) begin
-    modsq_rst_cdc1 <= rst_hold;
+    modsq_rst_cdc1 <= rst_hold;  // CDC
     modsq_rst_cdc2 <= modsq_rst_cdc1;
 end
 assign modsq_rst = modsq_rst_cdc2;
@@ -131,10 +131,10 @@ assign modsq_rst = modsq_rst_cdc2;
 always_ff @(posedge clk) begin
     start_hold <= reset | ( start_hold & !start_fb_cdc2 );
     start_fb_cdc2 <= start_fb_cdc1;
-    start_fb_cdc1 <= modsq_start_cdc2;
+    start_fb_cdc1 <= modsq_start_cdc2; // CDC
 end
 always_ff @(posedge modsq_clk) begin
-    modsq_start_cdc1 <= start_hold;
+    modsq_start_cdc1 <= start_hold; // CDC
     modsq_start_cdc2 <= modsq_start_cdc1;
     modsq_start_q <= modsq_start_cdc2;
 end
@@ -145,7 +145,7 @@ always_ff @(posedge modsq_clk ) begin
     modsq_valid_toggle <= modsq_valid_toggle ^ modsq_valid;
 end
 always_ff @(posedge clk) begin
-    modsq_valid_cdc1 <= modsq_valid_toggle;
+    modsq_valid_cdc1 <= modsq_valid_toggle;  // CDC
     modsq_valid_cdc2 <= modsq_valid_cdc1;
     modsq_valid_q    <= modsq_valid_cdc2;
 end
