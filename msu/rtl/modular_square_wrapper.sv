@@ -49,7 +49,7 @@ module modular_square_wrapper
    logic [BIT_LEN-1:0] sq_out_stages[IO_STAGES][NUM_ELEMENTS];
 
    logic mmcm_fb;
-   logic modsq_clk;
+   logic modsq_clk, modsq_clk_pll;
    logic rst_hold, rst_fb_cdc1, rst_fb_cdc2;
    logic modsq_rst_cdc1, modsq_rst_cdc2, modsq_rst;
    logic start_hold, start_fb_cdc1, start_fb_cdc2;
@@ -217,7 +217,7 @@ MMCME4_BASE #(
        .CLKIN1   ( clk       ),                 
        .CLKFBIN  ( mmcm_fb   ),        
        .CLKFBOUT ( mmcm_fb   ),            
-       .CLKOUT0  ( modsq_clk ),     
+       .CLKOUT0  ( modsq_clk_pll ),     
        .CLKOUT1  ( ),     
        .CLKOUT2  ( ),     
        .CLKOUT3  ( ),     
@@ -234,4 +234,8 @@ MMCME4_BASE #(
        .RST      ( 1'b0 )          
     );
 
+BUFG modsq_bufg_ (
+   .O( modsq_clk     ),
+   .I( modsq_clk_pll )
+   );
 endmodule
