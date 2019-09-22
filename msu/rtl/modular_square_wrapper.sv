@@ -113,9 +113,15 @@ module modular_square_wrapper
 
 //// Reset CDC ////
 always_ff @(posedge clk) begin
-    rst_hold <= reset | ( rst_hold & !rst_fb_cdc2 );
-    rst_fb_cdc2 <= rst_fb_cdc1;
-    rst_fb_cdc1 <= modsq_rst_cdc2; // CDC
+    if( reset ) begin
+        rst_hold    <= 1;
+        rst_fb_cdc2 <= 0;
+        rst_fb_cdc1 <= 0; // CDC
+    end else begin    
+        rst_hold    <= rst_hold & !rst_fb_cdc2;
+        rst_fb_cdc2 <= rst_fb_cdc1;
+        rst_fb_cdc1 <= modsq_rst_cdc2; // CDC
+    end
 end
 always_ff @(posedge modsq_clk) begin
     modsq_rst_cdc1 <= rst_hold;  // CDC
@@ -125,25 +131,48 @@ assign modsq_rst = modsq_rst_cdc2;
 
 ///// Start CDC ////
 always_ff @(posedge clk) begin
-    start_hold <= reset | ( start_hold & !start_fb_cdc2 );
-    start_fb_cdc2 <= start_fb_cdc1;
-    start_fb_cdc1 <= modsq_start_cdc2; // CDC
+    if( reset ) begin
+        start_hold    <= 0;
+        start_fb_cdc2 <= 0;
+        start_fb_cdc1 <= 0; // CDC
+    end else begin
+        start_hold    <= start | ( start_hold & !start_fb_cdc2 );
+        start_fb_cdc2 <= start_fb_cdc1;
+        start_fb_cdc1 <= modsq_start_cdc2; // CDC
+    end
 end
 always_ff @(posedge modsq_clk) begin
-    modsq_start_cdc1 <= start_hold; // CDC
-    modsq_start_cdc2 <= modsq_start_cdc1;
-    modsq_start_q <= modsq_start_cdc2;
+    if( modsq_rst ) begin
+        modsq_start_cdc1 <= 0; // CDC
+        modsq_start_cdc2 <= 0;
+        modsq_start_q    <= 0;
+        modsq_start      <= 0;
+    end else begin
+        modsq_start_cdc1 <= start_hold; // CDC
+        modsq_start_cdc2 <= modsq_start_cdc1;
+        modsq_start_q    <= modsq_start_cdc2;
+        modsq_start      <= !modsq_start_q & modsq_start_cdc2;
+    end
 end
-assign modsq_start = !modsq_start_q & modsq_start_cdc2;
 
 ///// Valid CDC //////
 always_ff @(posedge modsq_clk ) begin
-    modsq_valid_toggle <= modsq_valid_toggle ^ modsq_valid;
+    if( modsq_rst ) begin
+        modsq_valid_toggle <= 0;
+    end else begin
+        modsq_valid_toggle <= modsq_valid_toggle ^ modsq_valid;
+    end
 end
 always_ff @(posedge clk) begin
-    modsq_valid_cdc1 <= modsq_valid_toggle;  // CDC
-    modsq_valid_cdc2 <= modsq_valid_cdc1;
-    modsq_valid_q    <= modsq_valid_cdc2;
+    if( reset ) begin
+        modsq_valid_cdc1 <= 0;  // CDC
+        modsq_valid_cdc2 <= 0;
+        modsq_valid_q    <= 0;
+    end else begin
+        modsq_valid_cdc1 <= modsq_valid_toggle;  // CDC
+        modsq_valid_cdc2 <= modsq_valid_cdc1;
+        modsq_valid_q    <= modsq_valid_cdc2;
+    end
 end
 assign valid = modsq_valid_q ^ modsq_valid_cdc2;
 
@@ -182,7 +211,7 @@ MMCME4_BASE #(
        .IS_PWRDWN_INVERTED(1'b0),  
        .IS_RST_INVERTED(1'b0),     
        .REF_JITTER1(0.010),        
-       .STARTUP_WAIT("FALSE")       
+       .STARTUP_WAIT("TRUE")       
     )
  MMCME4_inst_ (
        .CLKIN1   ( clk       ),                 

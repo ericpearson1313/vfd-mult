@@ -215,7 +215,7 @@ module msu
    modsqr
      (
       .clk                (clk),
-      .reset              (reset || reset_1d || state == STATE_RECV || state == STATE_PREPARE_SEND ),
+      .reset              (reset || reset_1d || state == STATE_INIT || state == STATE_PREPARE_SEND ),
       .start              (sq_start),
       .sq_in              (sq_in),
       .sq_out             (sq_out),

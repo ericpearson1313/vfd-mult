@@ -16,9 +16,9 @@ Design documentation (below):
 - Stage2: Parallel 2Kbit product modulus with both 8/9bit BRAMs and 5/6bit LUTRAM based word reduction roms, and native CARRY8 adder trees
 - State machine controlled stage register enables and valid signals to give 2 clock cycles per stage. Multi-cycle timing constraints 
 - State machine intialization delay of 4 cycles for starting value paths. Multi-cycle timing constraints
-- Power savings by reset of modsqr unit upon completion of itterations.
+- Power savings by reset of modsqr unit upon completion of itterations, and give more cycles between before start by asserting modsq reset when IDLE.
 - Power ramp up of 1ms by integrated ramp pulse modulated delay of state machine register enables.
-- MMCM pll clock multiplier ( 102/101 < 101% ) and clock domain crossing in wrapper. Max-delay timing constraints.
+- MMCM pll clock multiplier 102:101 < 101% along with clock domain crossing logic in the wrapper. Max-delay timing constraints.
 
 
 
