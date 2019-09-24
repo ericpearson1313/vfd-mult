@@ -18,7 +18,7 @@ Design documentation (below):
 - State machine intialization delay of 4 cycles for starting value paths. Multi-cycle timing constraints
 - Power savings by reset of modsqr unit upon completion of itterations, and give more cycles between before start by asserting modsq reset when IDLE.
 - Power ramp up of 1ms by integrated ramp pulse modulated delay of state machine register enables.
-- MMCM pll clock multiplier 102:101 < 101% along with clock domain crossing logic in the wrapper. Max-delay timing constraints.
+- MMCM pll 101:102 clock multiplier along with clock domain crossing logic in the wrapper. Max-delay timing constraints.
 
 
 
