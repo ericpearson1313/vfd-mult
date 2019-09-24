@@ -7,7 +7,7 @@ To submit your design:
     git commit -s -m "round 1 entry"
 - email your final repo + commit to hello@vdfalliance.org
 
-Team name: Eric
+Team name: Eric Pearson
 Expected result (avg ns/square): 31.7 nS, ( 4 cyc @ (125*102/101) Mhz )
 Design documentation (below):
 - Used same numeric representation, word length, and interface as in the provided reference.
