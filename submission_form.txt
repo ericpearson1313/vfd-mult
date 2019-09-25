@@ -8,7 +8,7 @@ To submit your design:
 - email your final repo + commit to hello@vdfalliance.org
 
 Team name: Eric 
-Expected result (avg ns/square): 31.7 nS, ( 4 cyc @ (125*102/101) Mhz )
+Expected result (avg ns/square): 31.5 nS, 4 cyc @ (64/63)*125 Mhz
 Design documentation (below):
 - Used same numeric representation, word length, and interface as in the provided reference.
 - unrolled as 2 stage pipeline, with lut address = square product register.
@@ -16,9 +16,10 @@ Design documentation (below):
 - Stage2: Parallel 2Kbit product modulus with both 8/9bit BRAMs and 5/6bit LUTRAM based word reduction roms, and native CARRY8 adder trees
 - State machine controlled stage register enables and valid signals to give 2 clock cycles per stage. Multi-cycle timing constraints 
 - State machine intialization delay of 4 cycles for starting value paths. Multi-cycle timing constraints
-- Power savings by reset of modsqr unit upon completion of itterations, and give more cycles between before start by asserting modsq reset when IDLE.
+- Power savings by reset of modsqr unit upon while IDLE or upon completion of itterations.
 - Power ramp up of 1ms by integrated ramp pulse modulated delay of state machine register enables.
-- MMCM pll 101:102 clock multiplier along with clock domain crossing logic in the wrapper. Max-delay timing constraints.
-
-
+- MMCM pll 101:102 clock multiplier (31.7ns) along with clock domain crossing logic in the wrapper. Max-delay timing constraints.
+- Observed 124ps slack, which gives us 248 ps per modsq to lower our latencyA, so then
+- STEPS.ROUTE_DESIGN.TCL.POST=update_pll.tcl which adjusts MMCM PLL to 64:63 giving us 31.5 ns latency 
+- Timing closure is checked during bitstream generation and passes
 
