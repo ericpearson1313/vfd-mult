@@ -11,7 +11,7 @@ Team name: Eric
 Expected result (avg ns/square): 31.5 nS, 4 cyc @ (64/63)*125 Mhz
 Design documentation (below):
 - Used same numeric representation, word length, and interface as in the provided reference.
-- unrolled as 2 stage pipeline, with lut address = square product register.
+- unrolled as 2 stage pipeline, with lut address = square product register. see: modular_square/model/pictures.txt
 - Stage1: Parallel 1Kbit square unit based on 17bit DSP multiplier, with native CARRY8 adder trees
 - Stage2: Parallel 2Kbit product modulus with both 8/9bit BRAMs and 5/6bit LUTRAM based word reduction roms, and native CARRY8 adder trees
 - State machine controlled stage register enables and valid signals to give 2 clock cycles per stage. Multi-cycle timing constraints 
