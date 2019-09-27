@@ -18,4 +18,5 @@ Design documentation (below):
 - State machine intialization delay of 4 cycles for starting value paths. Multi-cycle timing constraints
 - Power savings by reset of modsqr unit upon while IDLE or upon completion of itterations.
 - Power ramp up of 1ms by integrated ramp pulse modulated delay of state machine register enables.
+- For simulation modify POWER_RAMP to 'h100 (normally 'h1 for synth). See line 57 in modular_square_8_cycles.sv
 
