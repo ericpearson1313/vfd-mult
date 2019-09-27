@@ -178,66 +178,64 @@ assign valid = modsq_valid_q ^ modsq_valid_cdc2;
 
 ///// PLL /////////
 
-assign modsq_clk = clk; // bypassing PLL for clocking simplicity
+MMCME4_BASE #(
+       .CLKIN1_PERIOD    ( 8.000  ), 
+       .DIVCLK_DIVIDE    ( 1      ),   
+       .CLKFBOUT_MULT_F  ( 12.75  ),
+       .CLKOUT0_DIVIDE_F ( 11.375 ),
+       .CLKOUT1_DIVIDE   ( 20     ),
+       .CLKOUT2_DIVIDE   ( 20     ),
+       .CLKOUT3_DIVIDE   ( 20     ),
+       .CLKOUT4_DIVIDE   ( 20     ),
+       .CLKOUT5_DIVIDE   ( 20     ),
+       .CLKOUT6_DIVIDE   ( 20     ),
+       .CLKOUT0_DUTY_CYCLE(0.5),   
+       .CLKOUT1_DUTY_CYCLE(0.5),   
+       .CLKOUT2_DUTY_CYCLE(0.5),   
+       .CLKOUT3_DUTY_CYCLE(0.5),   
+       .CLKOUT4_DUTY_CYCLE(0.5),   
+       .CLKOUT5_DUTY_CYCLE(0.5),   
+       .CLKOUT6_DUTY_CYCLE(0.5),   
+       .CLKFBOUT_PHASE(0.0),       
+       .CLKOUT0_PHASE(0.0),        
+       .CLKOUT1_PHASE(0.0),        
+       .CLKOUT2_PHASE(0.0),        
+       .CLKOUT3_PHASE(0.0),        
+       .CLKOUT4_PHASE(0.0),        
+       .CLKOUT5_PHASE(0.0),        
+       .CLKOUT6_PHASE(0.0),        
+       .BANDWIDTH("OPTIMIZED"),   
+       .CLKOUT4_CASCADE("FALSE"),  
+       .IS_CLKFBIN_INVERTED(1'b0), 
+       .IS_CLKIN1_INVERTED(1'b0),  
+       .IS_PWRDWN_INVERTED(1'b0),  
+       .IS_RST_INVERTED(1'b0),     
+       .REF_JITTER1(0.010),        
+       .STARTUP_WAIT("TRUE")       
+    )
+ MMCME4_inst_ (
+       .CLKIN1   ( clk       ),                 
+       .CLKFBIN  ( mmcm_fb   ),        
+       .CLKFBOUT ( mmcm_fb   ),            
+       .CLKOUT0  ( modsq_clk_pll ),     
+       .CLKOUT1  ( ),     
+       .CLKOUT2  ( ),     
+       .CLKOUT3  ( ),     
+       .CLKOUT4  ( ),  
+       .CLKOUT5  ( ),            
+       .CLKOUT6  ( ),  
+       .CLKFBOUTB( ),                     
+       .CLKOUT0B ( ),                      
+       .CLKOUT1B ( ),                      
+       .CLKOUT2B ( ),                      
+       .CLKOUT3B ( ),
+       .LOCKED   (   ),                        
+       .PWRDWN   ( 1'b0 ),                    
+       .RST      ( 1'b0 )          
+    );
 
-//MMCME4_BASE #(
-//       .CLKIN1_PERIOD    ( 8.000  ), 
-//       .DIVCLK_DIVIDE    ( 1      ),   
-//       .CLKFBOUT_MULT_F  ( 12.75  ),
-//       .CLKOUT0_DIVIDE_F ( 12.625 ),
-//       .CLKOUT1_DIVIDE   ( 20     ),
-//       .CLKOUT2_DIVIDE   ( 20     ),
-//       .CLKOUT3_DIVIDE   ( 20     ),
-//       .CLKOUT4_DIVIDE   ( 20     ),
-//       .CLKOUT5_DIVIDE   ( 20     ),
-//       .CLKOUT6_DIVIDE   ( 20     ),
-//       .CLKOUT0_DUTY_CYCLE(0.5),   
-//       .CLKOUT1_DUTY_CYCLE(0.5),   
-//       .CLKOUT2_DUTY_CYCLE(0.5),   
-//       .CLKOUT3_DUTY_CYCLE(0.5),   
-//       .CLKOUT4_DUTY_CYCLE(0.5),   
-//       .CLKOUT5_DUTY_CYCLE(0.5),   
-//       .CLKOUT6_DUTY_CYCLE(0.5),   
-//       .CLKFBOUT_PHASE(0.0),       
-//       .CLKOUT0_PHASE(0.0),        
-//       .CLKOUT1_PHASE(0.0),        
-//       .CLKOUT2_PHASE(0.0),        
-//       .CLKOUT3_PHASE(0.0),        
-//       .CLKOUT4_PHASE(0.0),        
-//       .CLKOUT5_PHASE(0.0),        
-//       .CLKOUT6_PHASE(0.0),        
-//       .BANDWIDTH("OPTIMIZED"),   
-//       .CLKOUT4_CASCADE("FALSE"),  
-//       .IS_CLKFBIN_INVERTED(1'b0), 
-//       .IS_CLKIN1_INVERTED(1'b0),  
-//       .IS_PWRDWN_INVERTED(1'b0),  
-//       .IS_RST_INVERTED(1'b0),     
-//       .REF_JITTER1(0.010),        
-//       .STARTUP_WAIT("TRUE")       
-//    )
-// MMCME4_inst_ (
-//       .CLKIN1   ( clk       ),                 
-//       .CLKFBIN  ( mmcm_fb   ),        
-//       .CLKFBOUT ( mmcm_fb   ),            
-//       .CLKOUT0  ( modsq_clk_pll ),     
-//       .CLKOUT1  ( ),     
-//       .CLKOUT2  ( ),     
-//       .CLKOUT3  ( ),     
-//       .CLKOUT4  ( ),  
-//       .CLKOUT5  ( ),            
-//       .CLKOUT6  ( ),  
-//       .CLKFBOUTB( ),                     
-//       .CLKOUT0B ( ),                      
-//       .CLKOUT1B ( ),                      
-//       .CLKOUT2B ( ),                      
-//       .CLKOUT3B ( ),
-//       .LOCKED   (   ),                        
-//       .PWRDWN   ( 1'b0 ),                    
-//       .RST      ( 1'b0 )          
-//    );
-//
-//BUFG modsq_bufg_ (
-//   .O( modsq_clk     ),
-//   .I( modsq_clk_pll )
-//   );
+BUFG modsq_bufg_ (
+   .O( modsq_clk     ),
+   .I( modsq_clk_pll )
+   );
 endmodule
