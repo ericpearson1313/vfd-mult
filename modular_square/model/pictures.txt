@@ -45,26 +45,23 @@
 #   |---|--------|--------|--------|--------|--------|--------|--------|
 
 # Memory lookup table for reduction constants
-# The upper 36 elements (V76) are split into two parts (8b/9b) for lookup with BRAMS
-# the next 32 elements (V54) are split into three parts (6b/6b/5b) for lookup with LUTRAMS
-# Each element is split into two equal parts with a third part for extra bits.
-# For example with a WORD_LEN of 16 and BIT_LEN of 17, each element would be
-#  split into a low 8 bits, a high 9 bits. The memory 
-#  table address would be 8 bits or 9 bits.  
+# each element is split into three parts (6b/6b/5b) for lookup with LUTRAMS
 # Each memory address would store a value of size NONREDUNDANT_ELEMENTS * 
 #  WORD_LEN.  For a 128 NONREDUNDANT_ELEMENTS value with WORD_LEN 16, the
 #  memory contents would each hold a 1024 bit value.  
 # Once the memory contents are read, each value across all elements is summed
 #  with the running tally.  
-# There will be 36*2+32*3 number of distinct memories.
+# There will be 68*3 number of distinct memories.
 
 # The outputs of the memories are added together with the lower 64 words of the square.
 #
-#                                  |-----------------------------------|
-#                                  |         8 lsb Lookup BRAMs        |
+#                                     |-----------------------------------|
+#                                     |         6 lsb LUTRAMs             |
+#                                  |-----------------------------------|  |
+#                                  |         6 csb Lookup BRAMs        |--+
 # |---|--------|--------|       |-----------------------------------|  |
 # |   |   V7   |   V6   |  -->  |                                   |  |
-# |---|--------|--------|       |       9 msb Lookup Brams          |--|
+# |---|--------|--------|       |       5 msb Lookup Brams          |--|
 #                               |                                   |
 #                               |-----------------------------------|
 # 
