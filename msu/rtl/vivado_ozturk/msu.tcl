@@ -255,6 +255,78 @@ set files [list \
  [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_027.dat" ]\
  [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_010.dat" ]\
  [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_023.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_020.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_012.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_004.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_017.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_009.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_033.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_024.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_026.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_011.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_000.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_029.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_013.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_030.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_007.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_034.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_008.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_016.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_021.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_003.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_025.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_001.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_006.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_031.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_019.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_028.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_022.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_015.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_035.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_018.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_005.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_002.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_032.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_014.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_027.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_010.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_54_023.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_020.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_012.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_004.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_017.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_009.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_033.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_024.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_026.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_011.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_000.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_029.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_013.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_030.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_007.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_034.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_008.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_016.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_021.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_003.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_025.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_001.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_006.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_031.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_019.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_028.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_022.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_015.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_035.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_018.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_005.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_002.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_032.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_014.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_027.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_010.dat" ]\
+ [file normalize "${origin_dir}/msu.srcs/mem/reduction_lut_76_023.dat" ]\
 ]
 set added_files [add_files -fileset sources_1 $files]
 
@@ -483,6 +555,293 @@ set file "mem/reduction_lut_023.dat"
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "file_type" -value "Data Files" -objects $file_obj
 
+set file "mem/reduction_lut_54_020.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_012.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_004.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_017.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_009.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_033.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_024.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_026.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_011.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_000.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_029.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_013.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_030.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_007.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_034.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_008.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_016.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_021.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_003.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_025.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_001.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_006.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_031.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_019.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_028.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_022.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_015.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_035.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_018.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_005.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_002.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_032.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_014.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_027.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_010.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_54_023.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_020.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_012.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_004.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_017.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_009.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_033.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_024.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_026.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_011.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_000.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_029.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_013.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_030.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_007.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_034.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_008.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_016.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_021.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_003.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_025.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_001.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_006.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_031.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_019.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_028.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_022.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_015.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_035.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_018.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_005.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_002.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_032.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_014.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_027.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_010.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
+
+set file "mem/reduction_lut_76_023.dat"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "Data Files" -objects $file_obj
 
 # Set 'sources_1' fileset properties
 set obj [get_filesets sources_1]
