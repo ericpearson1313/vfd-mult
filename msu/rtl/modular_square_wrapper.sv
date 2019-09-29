@@ -181,8 +181,8 @@ assign valid = modsq_valid_q ^ modsq_valid_cdc2;
 MMCME4_BASE #(
        .CLKIN1_PERIOD    ( 8.000  ), 
        .DIVCLK_DIVIDE    ( 1      ),   
-       .CLKFBOUT_MULT_F  ( 12.75  ),
-       .CLKOUT0_DIVIDE_F ( 11.125 ),
+       .CLKFBOUT_MULT_F  ( 7.875  ),
+       .CLKOUT0_DIVIDE_F ( 7      ),
        .CLKOUT1_DIVIDE   ( 20     ),
        .CLKOUT2_DIVIDE   ( 20     ),
        .CLKOUT3_DIVIDE   ( 20     ),
