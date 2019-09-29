@@ -8,7 +8,7 @@ To submit your design:
 - email your final repo + commit to hello@vdfalliance.org
 
 Team name: Eric 
-Expected result (avg ns/square): 28.5 nS, 4 cyc @ 140.6 Mhz. This design must timign close as SDx auto clock adjust not available with MMCM.
+Expected result (avg ns/square): 26.7 nS, 4 cyc @ 150 Mhz. This design must timign close as SDx auto clock adjust not available with MMCM.
 Design documentation (below):
 - Used same numeric representation, word length, and interface as in the provided reference.
 - unrolled as single stage fully parallel operation, with the loop register being the intermediate squared product see: modular_square/model/pictures.txt
@@ -18,6 +18,6 @@ Design documentation (below):
 - Additional State machine intialization delay of 4 cycles for starting value paths. Multi-cycle timing constraints
 - Power savings by reset of modsqr unit upon while IDLE or upon completion of itterations.
 - Power ramp up of 1ms by integrated ramp pulse modulated delay of state machine register enables.
-- MMCM pll 56:63 clock multiplier of 125 Mhz ref to give 140.6 Mhz. clock domain crossing logic in the wrapper. Max-delay timing constraints.
+- MMCM pll 85:102 clock multiplier of 125 Mhz ref to give 150 Mhz. clock domain crossing logic in the wrapper. Max-delay timing constraints.
 - For simulation modify POWER_RAMP to 'h100 (normally 'h1 for fpga synth). See line 57 in modular_square_8_cycles.sv
 
