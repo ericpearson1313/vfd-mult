@@ -54,7 +54,7 @@ module modular_square_8_cycles
 
    localparam int PULSE_ENERGY        = 'h40000;  // energy for 1 modsq stage (each 0.5), (guess 1uJ)
    localparam int MAX_POWER           = 'h20000;   // Max Power, about 64 Watts, must result in 2 cycles/pulse
-   localparam int POWER_RAMP          = 'h1; //'h100;     // Normal is 1, use larger for sims
+   localparam int POWER_RAMP          = 'h100; //'h100;     // Normal is 1, use larger for sims
       
    localparam int IDLE                = 0,
                   PRECYC_0            = 1,
@@ -333,7 +333,7 @@ module modular_square_8_cycles
    always_ff @(posedge clk) begin
       if( curr_cycle[CYCLE_3] ) begin
         for (int k=0; k<(NUM_ELEMENTS); k=k+1) begin
-            sq_out[k][BIT_LEN-1:0]      <= reduced_acc_sum[k][BIT_LEN-1:0];
+            sq_out[k][BIT_LEN-1:0]      <= curr_sq_in[k][BIT_LEN-1:0];
         end
       end
    end
