@@ -234,8 +234,7 @@ MMCME4_BASE #(
        .RST      ( 1'b0 )          
     );
 
-BUFG modsq_bufg_ (
-   .O( modsq_clk     ),
-   .I( modsq_clk_pll )
-   );
+//BUFG modsq_bufg_ ( .O( modsq_clk ), .I( modsq_clk_pll ));
+assign modsq_clk = clk; // bypass pll
+
 endmodule
