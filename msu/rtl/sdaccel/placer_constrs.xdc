@@ -5,8 +5,8 @@ create_pblock pb_slr2
 resize_pblock [get_pblocks pb_slr2] -add {CLOCKREGION_X0Y10:CLOCKREGION_X5Y14}
 set_property PARENT pblock_CL [get_pblocks pb_slr2]
 #add product/Lut registers
-add_cells_to_pblock pb_slr2 [get_cells -hier -filter {NAME =~ */msu/modsqr/modsqr/reduced_grid_sum_reg_reg*}]
-add_cells_to_pblock pb_slr2 [get_cells -hier -filter {NAME =~ */msu/modsqr/modsqr/reduction_lut_/*b_addr_reg_reg*}]
+#add_cells_to_pblock pb_slr2 [get_cells -hier -filter {NAME =~ */msu/modsqr/modsqr/reduced_grid_sum_reg_reg*}]
+#add_cells_to_pblock pb_slr2 [get_cells -hier -filter {NAME =~ */msu/modsqr/modsqr/reduction_lut_/*b_addr_reg_reg*}]
 
 create_pblock pb_slr01
 resize_pblock [get_pblocks pb_slr01] -add {SLICE_X88Y0:SLICE_X107Y599}
@@ -18,5 +18,5 @@ resize_pblock [get_pblocks pb_slr01] -add {URAM288_X2Y0:URAM288_X2Y159}
 resize_pblock [get_pblocks pb_slr01] -add {CLOCKREGION_X0Y0:CLOCKREGION_X2Y9}
 set_property PARENT pblock_CL [get_pblocks pb_slr01]
 #add sq_out registers
-add_cells_to_pblock pb_slr01 [get_cells -hier -filter {NAME =~ */msu/modsqr/modsqr/sq_out_reg*}]
+#add_cells_to_pblock pb_slr01 [get_cells -hier -filter {NAME =~ */msu/modsqr/modsqr/sq_out_reg*}]
 
