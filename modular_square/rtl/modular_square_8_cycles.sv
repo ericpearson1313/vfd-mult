@@ -298,7 +298,7 @@ module modular_square_8_cycles
 //                                    .S(acc_S[i])
 //                                   );
             assign acc_C[i] = 0;
-            sum256 #(
+            adder_tree_3_to_1 #(
                 .NUM_ELEMENTS( 205 ), // V54(32x) lsb, csb, msb, V76(36x) lsb, msb, V30
                 .BIT_LEN(ACC_BIT_LEN)
             ) res_adder_tree_ (
@@ -419,17 +419,8 @@ module square
          localparam integer CUR_ELEMENTS = (i <  NUM_ELEMENTS) ? (i+1) : NUM_ELEMENTS*2 - i;
          localparam integer GRID_INDEX   = (i <  NUM_ELEMENTS) ? 0 : ((i - NUM_ELEMENTS)*2+1);
 
-//         compressor_tree_3_to_2 #(.NUM_ELEMENTS(CUR_ELEMENTS),
-//                                  .BIT_LEN(OUT_BIT_LEN)
-//                                 )
-//            compressor_tree_3_to_2 (
-//               .terms(grid[i][GRID_INDEX:(GRID_INDEX + CUR_ELEMENTS - 1)]),
-//               .C(C[i]),
-//               .S(S[i])
-//            );
-
         assign C[i] = 0;
-        sum128 #(.NUM_ELEMENTS(CUR_ELEMENTS),
+        adder_tree_3_to_1 #(.NUM_ELEMENTS(CUR_ELEMENTS),
                                   .BIT_LEN(OUT_BIT_LEN)
                                  )
             sqr_adder_tree_ (
@@ -527,7 +518,7 @@ module sum128
    
 endmodule
 
-module adder_tree_2_to_1
+module adder_tree_3_to_1
    #(
      parameter int NUM_ELEMENTS      = 9,
      parameter int BIT_LEN           = 16
@@ -547,8 +538,12 @@ module adder_tree_2_to_1
          always_comb begin
             S[BIT_LEN-1:0] = terms[0] + terms[1];
          end
+      end else if (NUM_ELEMENTS == 3) begin // Return value
+         always_comb begin
+            S[BIT_LEN-1:0] = terms[0] + terms[1] + terms[2];
+         end
       end else begin
-         localparam integer NUM_RESULTS = integer'(NUM_ELEMENTS/2) + (NUM_ELEMENTS%2);
+         localparam integer NUM_RESULTS = integer'(NUM_ELEMENTS/3) + ((NUM_ELEMENTS%3)?1:0);
          logic [BIT_LEN-1:0] next_level_terms[NUM_RESULTS];
 
          adder_tree_level #(.NUM_ELEMENTS(NUM_ELEMENTS),
@@ -558,9 +553,9 @@ module adder_tree_2_to_1
                             .results(next_level_terms)
          );
 
-         adder_tree_2_to_1 #(.NUM_ELEMENTS(NUM_RESULTS),
+         adder_tree_3_to_1 #(.NUM_ELEMENTS(NUM_RESULTS),
                                   .BIT_LEN(BIT_LEN)
-         ) adder_tree_2_to_1 (
+         ) adder_tree_recurse_ (
                                   .terms(next_level_terms),
                                   .S(S)
          );
@@ -574,7 +569,7 @@ module adder_tree_level
      parameter int NUM_ELEMENTS = 3,
      parameter int BIT_LEN      = 19,
 
-     parameter int NUM_RESULTS  = integer'(NUM_ELEMENTS/2) + (NUM_ELEMENTS%2)
+     parameter int NUM_RESULTS  = integer'(NUM_ELEMENTS/3) + ((NUM_ELEMENTS%3)?1:0)
     )
    (
     input  logic [BIT_LEN-1:0] terms[NUM_ELEMENTS],
@@ -582,13 +577,15 @@ module adder_tree_level
    );
 
    always_comb begin
-      for (int i=0; i<(NUM_ELEMENTS / 2); i++) begin
-         results[i] = terms[i*2] + terms[i*2+1];
+      for (int i=0; i<(NUM_ELEMENTS / 3); i++) begin
+         results[i] = terms[i*3] + terms[i*3+1] + terms[i*3+2];
       end
 
-      if( NUM_ELEMENTS % 2 == 1 ) begin
+      if( NUM_ELEMENTS % 3 == 1 ) begin
          results[NUM_RESULTS-1] = terms[NUM_ELEMENTS-1];
-      end
+      end else if ( NUM_ELEMENTS % 3 == 2 ) begin
+         results[NUM_RESULTS-1] = terms[NUM_ELEMENTS-2] + terms[NUM_ELEMENTS-1];
+      end      
    end
 endmodule
 
