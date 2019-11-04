@@ -54,7 +54,7 @@ module modular_square_8_cycles
 
    localparam int PULSE_ENERGY        = 'h40000;  // energy for 1 modsq stage (each 0.5), (guess 1uJ)
    localparam int MAX_POWER           = 'h20000;   // Max Power, about 64 Watts, must result in 2 cycles/pulse
-   localparam int POWER_RAMP          = 'h1; //'h100;     // Normal is 'h1, use 'h100 for sims
+   localparam int POWER_RAMP          = 'h1; //'h100;     // Normal is 1, use larger for sims
       
    localparam int IDLE                = 0,
                   PRECYC_0            = 1,
@@ -298,10 +298,10 @@ module modular_square_8_cycles
 //                                    .S(acc_S[i])
 //                                   );
             assign acc_C[i] = 0;
-            adder_tree_3_to_1 #(
+            adder_tree_2_to_1 #(
                 .NUM_ELEMENTS( 205 ), // V54(32x) lsb, csb, msb, V76(36x) lsb, msb, V30
                 .BIT_LEN(ACC_BIT_LEN)
-            ) res_adder_tree_ (
+            ) adder_tree_2_to_1 (
                 .terms(acc_stack[i]),
                 .S(acc_S[i])
             );
@@ -419,11 +419,20 @@ module square
          localparam integer CUR_ELEMENTS = (i <  NUM_ELEMENTS) ? (i+1) : NUM_ELEMENTS*2 - i;
          localparam integer GRID_INDEX   = (i <  NUM_ELEMENTS) ? 0 : ((i - NUM_ELEMENTS)*2+1);
 
+//         compressor_tree_3_to_2 #(.NUM_ELEMENTS(CUR_ELEMENTS),
+//                                  .BIT_LEN(OUT_BIT_LEN)
+//                                 )
+//            compressor_tree_3_to_2 (
+//               .terms(grid[i][GRID_INDEX:(GRID_INDEX + CUR_ELEMENTS - 1)]),
+//               .C(C[i]),
+//               .S(S[i])
+//            );
+
         assign C[i] = 0;
-        adder_tree_3_to_1 #(.NUM_ELEMENTS(CUR_ELEMENTS),
+        adder_tree_2_to_1 #(.NUM_ELEMENTS(CUR_ELEMENTS),
                                   .BIT_LEN(OUT_BIT_LEN)
                                  )
-            sqr_adder_tree_ (
+            adder_tree_2_to_1 (
                .terms(grid[i][GRID_INDEX:(GRID_INDEX + CUR_ELEMENTS - 1)]),
                .S(S[i])
             );
@@ -456,69 +465,7 @@ module async_multiplier
    end
 endmodule
 
-module sum256
-   #(
-     parameter int NUM_ELEMENTS      = 9,
-     parameter int BIT_LEN           = 16
-    )
-   (
-    input  logic [BIT_LEN-1:0] terms[NUM_ELEMENTS],
-    output logic [BIT_LEN-1:0] S
-   );
-   
-   logic [BIT_LEN-1:0] a[256]; 
-   always_comb begin
-      for( int kk = 0; kk < 256; kk++ ) begin
-         a[kk] = ( kk < NUM_ELEMENTS ) ? terms[kk] : 0;
-      end
-   
-      S =
-      a[0]+a[10]+a[20]+a[30]+a[40]+a[50]+a[60]+a[70]+a[80]+a[90]+a[100]+a[110]+a[120]+a[130]+a[140]+a[150]+a[160]+a[170]+a[180]+a[190]+a[200]+a[210]+a[220]+a[230]+a[240]+a[250]+
-      a[1]+a[11]+a[21]+a[31]+a[41]+a[51]+a[61]+a[71]+a[81]+a[91]+a[101]+a[111]+a[121]+a[131]+a[141]+a[151]+a[161]+a[171]+a[181]+a[191]+a[201]+a[211]+a[221]+a[231]+a[241]+a[251]+
-      a[2]+a[12]+a[22]+a[32]+a[42]+a[52]+a[62]+a[72]+a[82]+a[92]+a[102]+a[112]+a[122]+a[132]+a[142]+a[152]+a[162]+a[172]+a[182]+a[192]+a[202]+a[212]+a[222]+a[232]+a[242]+a[252]+
-      a[3]+a[13]+a[23]+a[33]+a[43]+a[53]+a[63]+a[73]+a[83]+a[93]+a[103]+a[113]+a[123]+a[133]+a[143]+a[153]+a[163]+a[173]+a[183]+a[193]+a[203]+a[213]+a[223]+a[233]+a[243]+a[253]+
-      a[4]+a[14]+a[24]+a[34]+a[44]+a[54]+a[64]+a[74]+a[84]+a[94]+a[104]+a[114]+a[124]+a[134]+a[144]+a[154]+a[164]+a[174]+a[184]+a[194]+a[204]+a[214]+a[224]+a[234]+a[244]+a[254]+
-      a[5]+a[15]+a[25]+a[35]+a[45]+a[55]+a[65]+a[75]+a[85]+a[95]+a[105]+a[115]+a[125]+a[135]+a[145]+a[155]+a[165]+a[175]+a[185]+a[195]+a[205]+a[215]+a[225]+a[235]+a[245]+a[255]+
-      a[6]+a[16]+a[26]+a[36]+a[46]+a[56]+a[66]+a[76]+a[86]+a[96]+a[106]+a[116]+a[126]+a[136]+a[146]+a[156]+a[166]+a[176]+a[186]+a[196]+a[206]+a[216]+a[226]+a[236]+a[246]+
-      a[7]+a[17]+a[27]+a[37]+a[47]+a[57]+a[67]+a[77]+a[87]+a[97]+a[107]+a[117]+a[127]+a[137]+a[147]+a[157]+a[167]+a[177]+a[187]+a[197]+a[207]+a[217]+a[227]+a[237]+a[247]+
-      a[8]+a[18]+a[28]+a[38]+a[48]+a[58]+a[68]+a[78]+a[88]+a[98]+a[108]+a[118]+a[128]+a[138]+a[148]+a[158]+a[168]+a[178]+a[188]+a[198]+a[208]+a[218]+a[228]+a[238]+a[248]+
-      a[9]+a[19]+a[29]+a[39]+a[49]+a[59]+a[69]+a[79]+a[89]+a[99]+a[109]+a[119]+a[129]+a[139]+a[149]+a[159]+a[169]+a[179]+a[189]+a[199]+a[209]+a[219]+a[229]+a[239]+a[249];
-   end
-   
-endmodule
-
-module sum128
-   #(
-     parameter int NUM_ELEMENTS      = 9,
-     parameter int BIT_LEN           = 16
-    )
-   (
-    input  logic [BIT_LEN-1:0] terms[NUM_ELEMENTS],
-    output logic [BIT_LEN-1:0] S
-   );
-   
-   logic [BIT_LEN-1:0] a[128]; 
-   always_comb begin
-      for( int kk = 0; kk < 128; kk++ ) begin
-         a[kk] = ( kk < NUM_ELEMENTS ) ? terms[kk] : 0;
-      end
-   
-      S =
-      a[0]+a[10]+a[20]+a[30]+a[40]+a[50]+a[60]+a[70]+a[80]+a[90]+a[100]+a[110]+a[120]+
-      a[1]+a[11]+a[21]+a[31]+a[41]+a[51]+a[61]+a[71]+a[81]+a[91]+a[101]+a[111]+a[121]+
-      a[2]+a[12]+a[22]+a[32]+a[42]+a[52]+a[62]+a[72]+a[82]+a[92]+a[102]+a[112]+a[122]+
-      a[3]+a[13]+a[23]+a[33]+a[43]+a[53]+a[63]+a[73]+a[83]+a[93]+a[103]+a[113]+a[123]+
-      a[4]+a[14]+a[24]+a[34]+a[44]+a[54]+a[64]+a[74]+a[84]+a[94]+a[104]+a[114]+a[124]+
-      a[5]+a[15]+a[25]+a[35]+a[45]+a[55]+a[65]+a[75]+a[85]+a[95]+a[105]+a[115]+a[125]+
-      a[6]+a[16]+a[26]+a[36]+a[46]+a[56]+a[66]+a[76]+a[86]+a[96]+a[106]+a[116]+a[126]+
-      a[7]+a[17]+a[27]+a[37]+a[47]+a[57]+a[67]+a[77]+a[87]+a[97]+a[107]+a[117]+a[127]+
-      a[8]+a[18]+a[28]+a[38]+a[48]+a[58]+a[68]+a[78]+a[88]+a[98]+a[108]+a[118]+
-      a[9]+a[19]+a[29]+a[39]+a[49]+a[59]+a[69]+a[79]+a[89]+a[99]+a[109]+a[119];
-   end
-   
-endmodule
-
-module adder_tree_3_to_1
+module adder_tree_2_to_1
    #(
      parameter int NUM_ELEMENTS      = 9,
      parameter int BIT_LEN           = 16
@@ -538,12 +485,8 @@ module adder_tree_3_to_1
          always_comb begin
             S[BIT_LEN-1:0] = terms[0] + terms[1];
          end
-      end else if (NUM_ELEMENTS == 3) begin // Return value
-         always_comb begin
-            S[BIT_LEN-1:0] = terms[0] + terms[1] + terms[2];
-         end
       end else begin
-         localparam integer NUM_RESULTS = integer'(NUM_ELEMENTS/3) + ((NUM_ELEMENTS%3)?1:0);
+         localparam integer NUM_RESULTS = integer'(NUM_ELEMENTS/2) + (NUM_ELEMENTS%2);
          logic [BIT_LEN-1:0] next_level_terms[NUM_RESULTS];
 
          adder_tree_level #(.NUM_ELEMENTS(NUM_ELEMENTS),
@@ -553,9 +496,9 @@ module adder_tree_3_to_1
                             .results(next_level_terms)
          );
 
-         adder_tree_3_to_1 #(.NUM_ELEMENTS(NUM_RESULTS),
+         adder_tree_2_to_1 #(.NUM_ELEMENTS(NUM_RESULTS),
                                   .BIT_LEN(BIT_LEN)
-         ) adder_tree_recurse_ (
+         ) adder_tree_2_to_1 (
                                   .terms(next_level_terms),
                                   .S(S)
          );
@@ -569,7 +512,7 @@ module adder_tree_level
      parameter int NUM_ELEMENTS = 3,
      parameter int BIT_LEN      = 19,
 
-     parameter int NUM_RESULTS  = integer'(NUM_ELEMENTS/3) + ((NUM_ELEMENTS%3)?1:0)
+     parameter int NUM_RESULTS  = integer'(NUM_ELEMENTS/2) + (NUM_ELEMENTS%2)
     )
    (
     input  logic [BIT_LEN-1:0] terms[NUM_ELEMENTS],
@@ -577,38 +520,14 @@ module adder_tree_level
    );
 
    always_comb begin
-      for (int i=0; i<(NUM_ELEMENTS / 3); i++) begin
-         results[i] = terms[i*3] + terms[i*3+1] + terms[i*3+2];
+      for (int i=0; i<(NUM_ELEMENTS / 2); i++) begin
+         results[i] = terms[i*2] + terms[i*2+1];
       end
 
-      if( NUM_ELEMENTS % 3 == 1 ) begin
+      if( NUM_ELEMENTS % 2 == 1 ) begin
          results[NUM_RESULTS-1] = terms[NUM_ELEMENTS-1];
-      end else if ( NUM_ELEMENTS % 3 == 2 ) begin
-         results[NUM_RESULTS-1] = terms[NUM_ELEMENTS-2] + terms[NUM_ELEMENTS-1];
-      end      
+      end
    end
-endmodule
-
-module adder3 
-#(
-	parameter int N = 19
-) 
-(
-	input logic [N-1:0]   	a,
-	input logic [N-1:0]   	b,
-	input logic [N-1:0]   	c,
-	output logic [N-1:0]  	sum
-);
-
-// parallel full adder
-logic [N-1:0] fa_s; 
-logic [N-1:0] fa_c;
-
-assign fa_s = a^b^c;
-assign fa_c = (a&b)|(a&c)|(b&c);
-
-assign sum = fa_s + { fa_c[N-2:0], 1'b0 };
-
 endmodule
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
