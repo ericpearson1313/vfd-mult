@@ -182,7 +182,7 @@ MMCME4_BASE #(
        .CLKIN1_PERIOD    ( 8.000  ), 
        .DIVCLK_DIVIDE    ( 1      ),   
        .CLKFBOUT_MULT_F  ( 12.75  ),
-       .CLKOUT0_DIVIDE_F ( 10.625 ),
+       .CLKOUT0_DIVIDE_F ( 11.375 ),
        .CLKOUT1_DIVIDE   ( 20     ),
        .CLKOUT2_DIVIDE   ( 20     ),
        .CLKOUT3_DIVIDE   ( 20     ),
@@ -234,7 +234,8 @@ MMCME4_BASE #(
        .RST      ( 1'b0 )          
     );
 
-//BUFG modsq_bufg_ ( .O( modsq_clk ), .I( modsq_clk_pll ));
-assign modsq_clk = clk; // bypass pll
-
+BUFG modsq_bufg_ (
+   .O( modsq_clk     ),
+   .I( modsq_clk_pll )
+   );
 endmodule
