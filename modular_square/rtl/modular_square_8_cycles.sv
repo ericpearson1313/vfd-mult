@@ -1023,11 +1023,11 @@ module full_reduction_lut
       lut54_msb_read_data_bram[34] = 1024'b0; 
       lut54_msb_read_data_bram[35] = 1024'b0; 
 
-      lut76_lsb_read_data_bram[0]  = lut76_lsb_000[lut76_lsb_addr_reg[ 0][5:0]];
-      lut76_lsb_read_data_bram[1]  = lut76_lsb_001[lut76_lsb_addr_reg[ 1][5:0]];
-      lut76_lsb_read_data_bram[2]  = lut76_lsb_002[lut76_lsb_addr_reg[ 2][5:0]];
-      lut76_lsb_read_data_bram[3]  = lut76_lsb_003[lut76_lsb_addr_reg[ 3][5:0]];
-      lut76_lsb_read_data_bram[4]  = lut76_lsb_004[lut76_lsb_addr_reg[ 4][5:0]];
+      lut76_lsb_read_data_bram[0]  = lut76_lsb_000[lut76_lsb_addr[ 0][5:0]];
+      lut76_lsb_read_data_bram[1]  = lut76_lsb_001[lut76_lsb_addr[ 1][5:0]];
+      lut76_lsb_read_data_bram[2]  = lut76_lsb_002[lut76_lsb_addr[ 2][5:0]];
+      lut76_lsb_read_data_bram[3]  = lut76_lsb_003[lut76_lsb_addr[ 3][5:0]];
+      lut76_lsb_read_data_bram[4]  = lut76_lsb_004[lut76_lsb_addr[ 4][5:0]];
       lut76_lsb_read_data_bram[5]  = lut76_lsb_005[lut76_lsb_addr_reg[ 5][5:0]];
       lut76_lsb_read_data_bram[6]  = lut76_lsb_006[lut76_lsb_addr_reg[ 6][5:0]];
       lut76_lsb_read_data_bram[7]  = lut76_lsb_007[lut76_lsb_addr_reg[ 7][5:0]];
@@ -1060,11 +1060,11 @@ module full_reduction_lut
       lut76_lsb_read_data_bram[34] = lut76_lsb_034[lut76_lsb_addr_reg[34][5:0]];
       lut76_lsb_read_data_bram[35] = lut76_lsb_035[lut76_lsb_addr_reg[35][5:0]];
 
-      lut76_csb_read_data_bram[0]  = lut76_csb_000[lut76_csb_addr_reg[ 0][5:0]];
-      lut76_csb_read_data_bram[1]  = lut76_csb_001[lut76_csb_addr_reg[ 1][5:0]];
-      lut76_csb_read_data_bram[2]  = lut76_csb_002[lut76_csb_addr_reg[ 2][5:0]];
-      lut76_csb_read_data_bram[3]  = lut76_csb_003[lut76_csb_addr_reg[ 3][5:0]];
-      lut76_csb_read_data_bram[4]  = lut76_csb_004[lut76_csb_addr_reg[ 4][5:0]];
+      lut76_csb_read_data_bram[0]  = lut76_csb_000[lut76_csb_addr[ 0][5:0]];
+      lut76_csb_read_data_bram[1]  = lut76_csb_001[lut76_csb_addr[ 1][5:0]];
+      lut76_csb_read_data_bram[2]  = lut76_csb_002[lut76_csb_addr[ 2][5:0]];
+      lut76_csb_read_data_bram[3]  = lut76_csb_003[lut76_csb_addr[ 3][5:0]];
+      lut76_csb_read_data_bram[4]  = lut76_csb_004[lut76_csb_addr[ 4][5:0]];
       lut76_csb_read_data_bram[5]  = lut76_csb_005[lut76_csb_addr_reg[ 5][5:0]];
       lut76_csb_read_data_bram[6]  = lut76_csb_006[lut76_csb_addr_reg[ 6][5:0]];
       lut76_csb_read_data_bram[7]  = lut76_csb_007[lut76_csb_addr_reg[ 7][5:0]];
@@ -1097,11 +1097,11 @@ module full_reduction_lut
       lut76_csb_read_data_bram[34] = lut76_csb_034[lut76_csb_addr_reg[34][5:0]];
       lut76_csb_read_data_bram[35] = lut76_csb_035[lut76_csb_addr_reg[35][5:0]];
 
-      lut76_msb_read_data_bram[0]  = lut76_msb_000[lut76_msb_addr_reg[ 0][4:0]];
-      lut76_msb_read_data_bram[1]  = lut76_msb_001[lut76_msb_addr_reg[ 1][4:0]];
-      lut76_msb_read_data_bram[2]  = lut76_msb_002[lut76_msb_addr_reg[ 2][4:0]];
-      lut76_msb_read_data_bram[3]  = lut76_msb_003[lut76_msb_addr_reg[ 3][4:0]];
-      lut76_msb_read_data_bram[4]  = lut76_msb_004[lut76_msb_addr_reg[ 4][4:0]];
+      lut76_msb_read_data_bram[0]  = lut76_msb_000[lut76_msb_addr[ 0][4:0]];
+      lut76_msb_read_data_bram[1]  = lut76_msb_001[lut76_msb_addr[ 1][4:0]];
+      lut76_msb_read_data_bram[2]  = lut76_msb_002[lut76_msb_addr[ 2][4:0]];
+      lut76_msb_read_data_bram[3]  = lut76_msb_003[lut76_msb_addr[ 3][4:0]];
+      lut76_msb_read_data_bram[4]  = lut76_msb_004[lut76_msb_addr[ 4][4:0]];
       lut76_msb_read_data_bram[5]  = lut76_msb_005[lut76_msb_addr_reg[ 5][4:0]];
       lut76_msb_read_data_bram[6]  = lut76_msb_006[lut76_msb_addr_reg[ 6][4:0]];
       lut76_msb_read_data_bram[7]  = lut76_msb_007[lut76_msb_addr_reg[ 7][4:0]];
