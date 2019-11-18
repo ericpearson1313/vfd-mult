@@ -52,8 +52,8 @@ module modular_square_8_cycles
    localparam int ACC_EXTRA_BIT_LEN   = 8; // WAS: $clog2(ACC_ELEMENTS+ACC_EXTRA_ELEMENTS);
    localparam int ACC_BIT_LEN         = ( BIT_LEN + ACC_EXTRA_BIT_LEN ); // 25b
 
-   localparam int PULSE_ENERGY        = 'h40000;  // energy for 1 modsq stage (each 0.5), (guess 1uJ)
-   localparam int MAX_POWER           = 'h20000;   // Max Power, about 64 Watts, must result in 2 cycles/pulse
+   localparam int PULSE_ENERGY        = 'h4000000;  // energy for 1 modsq stage (each 0.5), (guess 1uJ)
+   localparam int MAX_POWER           = 'h2000000;   // Max Power, about 64 Watts, must result in 2 cycles/pulse
    localparam int POWER_RAMP          = 'h1; //'h100;     // Normal is 1, use larger for sims
       
    localparam int IDLE                = 0,
@@ -77,8 +77,8 @@ module modular_square_8_cycles
    // Cycle number state machine
    logic [NUM_CYCLES-1:0]    next_cycle; // 4 cycles
    logic [NUM_CYCLES-1:0]    curr_cycle; // 4 cycles
-   logic [20:0]              power_count;  // power setpoint
-   logic [20:0]              energy_error; // accumulated energy error
+   logic [31:0]              power_count;  // power setpoint
+   logic [31:0]              energy_error; // accumulated energy error
    logic                     power_ok; // flag to burn power
 
    // Multiplier selects in/out and values
@@ -161,8 +161,8 @@ module modular_square_8_cycles
       if (reset) begin
          valid                       <= 1'b0;
          start_d1                    <= 1'b0;
-         power_count                 <= 21'b0;
-         energy_error                <= 21'b0;
+         power_count                 <= 32'b0;
+         energy_error                <= 32'b0;
       end
       else begin
          valid                       <= out_valid;
