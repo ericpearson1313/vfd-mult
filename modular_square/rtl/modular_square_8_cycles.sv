@@ -310,16 +310,12 @@ module modular_square_8_cycles
 
    // Carry propogate add each column in accumulator result
    // Partially reduce adding neighbor carries
-   always_ff @(posedge clk) begin
-      if( curr_cycle[CYCLE_3] ) begin
-         for (int k=0; k<NUM_ELEMENTS; k=k+1) begin
-            acc_sum[k][ACC_BIT_LEN:0] = acc_C[k][ACC_BIT_LEN-1:0] +
-                                        acc_S[k][ACC_BIT_LEN-1:0];
-         end
-      end
-   end
-
    always_comb begin
+      for (int k=0; k<NUM_ELEMENTS; k=k+1) begin
+         acc_sum[k][ACC_BIT_LEN:0] = acc_C[k][ACC_BIT_LEN-1:0] +
+                                     acc_S[k][ACC_BIT_LEN-1:0];
+      end
+
       reduced_acc_sum[0] =     {{(BIT_LEN-WORD_LEN)                {1'b0}}, acc_sum[0  ][WORD_LEN-1:0]};
       for (int k=1; k<NUM_ELEMENTS-1; k=k+1) begin
          reduced_acc_sum[k] =  {{(BIT_LEN-WORD_LEN)                {1'b0}}, acc_sum[k  ][WORD_LEN-1:0]} +
@@ -330,10 +326,12 @@ module modular_square_8_cycles
    end
 
    // Always Flop output
-   always_comb begin
+   always_ff @(posedge clk) begin
+      if( curr_cycle[CYCLE_3] ) begin
         for (int k=0; k<(NUM_ELEMENTS); k=k+1) begin
             sq_out[k][BIT_LEN-1:0]      <= reduced_acc_sum[k][BIT_LEN-1:0];
         end
+      end
    end
 endmodule
 
@@ -919,33 +917,33 @@ module full_reduction_lut
       lut54_lsb_read_data_bram[2]  = lut54_lsb_002[lut54_lsb_addr[ 2][5:0]];
       lut54_lsb_read_data_bram[3]  = lut54_lsb_003[lut54_lsb_addr[ 3][5:0]];
       lut54_lsb_read_data_bram[4]  = lut54_lsb_004[lut54_lsb_addr[ 4][5:0]];
-      lut54_lsb_read_data_bram[5]  = lut54_lsb_005[lut54_lsb_addr_reg[ 5][5:0]];
-      lut54_lsb_read_data_bram[6]  = lut54_lsb_006[lut54_lsb_addr_reg[ 6][5:0]];
-      lut54_lsb_read_data_bram[7]  = lut54_lsb_007[lut54_lsb_addr_reg[ 7][5:0]];
-      lut54_lsb_read_data_bram[8]  = lut54_lsb_008[lut54_lsb_addr_reg[ 8][5:0]];
-      lut54_lsb_read_data_bram[9]  = lut54_lsb_009[lut54_lsb_addr_reg[ 9][5:0]];
-      lut54_lsb_read_data_bram[10] = lut54_lsb_010[lut54_lsb_addr_reg[10][5:0]];
-      lut54_lsb_read_data_bram[11] = lut54_lsb_011[lut54_lsb_addr_reg[11][5:0]];
-      lut54_lsb_read_data_bram[12] = lut54_lsb_012[lut54_lsb_addr_reg[12][5:0]];
-      lut54_lsb_read_data_bram[13] = lut54_lsb_013[lut54_lsb_addr_reg[13][5:0]];
-      lut54_lsb_read_data_bram[14] = lut54_lsb_014[lut54_lsb_addr_reg[14][5:0]];
-      lut54_lsb_read_data_bram[15] = lut54_lsb_015[lut54_lsb_addr_reg[15][5:0]];
-      lut54_lsb_read_data_bram[16] = lut54_lsb_016[lut54_lsb_addr_reg[16][5:0]];
-      lut54_lsb_read_data_bram[17] = lut54_lsb_017[lut54_lsb_addr_reg[17][5:0]];
-      lut54_lsb_read_data_bram[18] = lut54_lsb_018[lut54_lsb_addr_reg[18][5:0]];
-      lut54_lsb_read_data_bram[19] = lut54_lsb_019[lut54_lsb_addr_reg[19][5:0]];
-      lut54_lsb_read_data_bram[20] = lut54_lsb_020[lut54_lsb_addr_reg[20][5:0]];
-      lut54_lsb_read_data_bram[21] = lut54_lsb_021[lut54_lsb_addr_reg[21][5:0]];
-      lut54_lsb_read_data_bram[22] = lut54_lsb_022[lut54_lsb_addr_reg[22][5:0]];
-      lut54_lsb_read_data_bram[23] = lut54_lsb_023[lut54_lsb_addr_reg[23][5:0]];
-      lut54_lsb_read_data_bram[24] = lut54_lsb_024[lut54_lsb_addr_reg[24][5:0]];
-      lut54_lsb_read_data_bram[25] = lut54_lsb_025[lut54_lsb_addr_reg[25][5:0]];
-      lut54_lsb_read_data_bram[26] = lut54_lsb_026[lut54_lsb_addr_reg[26][5:0]];
-      lut54_lsb_read_data_bram[27] = lut54_lsb_027[lut54_lsb_addr_reg[27][5:0]];
-      lut54_lsb_read_data_bram[28] = lut54_lsb_028[lut54_lsb_addr_reg[28][5:0]];
-      lut54_lsb_read_data_bram[29] = lut54_lsb_029[lut54_lsb_addr_reg[29][5:0]];
-      lut54_lsb_read_data_bram[30] = lut54_lsb_030[lut54_lsb_addr_reg[30][5:0]];
-      lut54_lsb_read_data_bram[31] = lut54_lsb_031[lut54_lsb_addr_reg[31][5:0]];
+      lut54_lsb_read_data_bram[5]  = lut54_lsb_005[lut54_lsb_addr[ 5][5:0]];
+      lut54_lsb_read_data_bram[6]  = lut54_lsb_006[lut54_lsb_addr[ 6][5:0]];
+      lut54_lsb_read_data_bram[7]  = lut54_lsb_007[lut54_lsb_addr[ 7][5:0]];
+      lut54_lsb_read_data_bram[8]  = lut54_lsb_008[lut54_lsb_addr[ 8][5:0]];
+      lut54_lsb_read_data_bram[9]  = lut54_lsb_009[lut54_lsb_addr[ 9][5:0]];
+      lut54_lsb_read_data_bram[10] = lut54_lsb_010[lut54_lsb_addr[10][5:0]];
+      lut54_lsb_read_data_bram[11] = lut54_lsb_011[lut54_lsb_addr[11][5:0]];
+      lut54_lsb_read_data_bram[12] = lut54_lsb_012[lut54_lsb_addr[12][5:0]];
+      lut54_lsb_read_data_bram[13] = lut54_lsb_013[lut54_lsb_addr[13][5:0]];
+      lut54_lsb_read_data_bram[14] = lut54_lsb_014[lut54_lsb_addr[14][5:0]];
+      lut54_lsb_read_data_bram[15] = lut54_lsb_015[lut54_lsb_addr[15][5:0]];
+      lut54_lsb_read_data_bram[16] = lut54_lsb_016[lut54_lsb_addr[16][5:0]];
+      lut54_lsb_read_data_bram[17] = lut54_lsb_017[lut54_lsb_addr[17][5:0]];
+      lut54_lsb_read_data_bram[18] = lut54_lsb_018[lut54_lsb_addr[18][5:0]];
+      lut54_lsb_read_data_bram[19] = lut54_lsb_019[lut54_lsb_addr[19][5:0]];
+      lut54_lsb_read_data_bram[20] = lut54_lsb_020[lut54_lsb_addr[20][5:0]];
+      lut54_lsb_read_data_bram[21] = lut54_lsb_021[lut54_lsb_addr[21][5:0]];
+      lut54_lsb_read_data_bram[22] = lut54_lsb_022[lut54_lsb_addr[22][5:0]];
+      lut54_lsb_read_data_bram[23] = lut54_lsb_023[lut54_lsb_addr[23][5:0]];
+      lut54_lsb_read_data_bram[24] = lut54_lsb_024[lut54_lsb_addr[24][5:0]];
+      lut54_lsb_read_data_bram[25] = lut54_lsb_025[lut54_lsb_addr[25][5:0]];
+      lut54_lsb_read_data_bram[26] = lut54_lsb_026[lut54_lsb_addr[26][5:0]];
+      lut54_lsb_read_data_bram[27] = lut54_lsb_027[lut54_lsb_addr[27][5:0]];
+      lut54_lsb_read_data_bram[28] = lut54_lsb_028[lut54_lsb_addr[28][5:0]];
+      lut54_lsb_read_data_bram[29] = lut54_lsb_029[lut54_lsb_addr[29][5:0]];
+      lut54_lsb_read_data_bram[30] = lut54_lsb_030[lut54_lsb_addr[30][5:0]];
+      lut54_lsb_read_data_bram[31] = lut54_lsb_031[lut54_lsb_addr[31][5:0]];
       lut54_lsb_read_data_bram[32] = 1024'b0; 
       lut54_lsb_read_data_bram[33] = 1024'b0; 
       lut54_lsb_read_data_bram[34] = 1024'b0; 
@@ -956,33 +954,33 @@ module full_reduction_lut
       lut54_csb_read_data_bram[2]  = lut54_csb_002[lut54_csb_addr[ 2][5:0]];
       lut54_csb_read_data_bram[3]  = lut54_csb_003[lut54_csb_addr[ 3][5:0]];
       lut54_csb_read_data_bram[4]  = lut54_csb_004[lut54_csb_addr[ 4][5:0]];
-      lut54_csb_read_data_bram[5]  = lut54_csb_005[lut54_csb_addr_reg[ 5][5:0]];
-      lut54_csb_read_data_bram[6]  = lut54_csb_006[lut54_csb_addr_reg[ 6][5:0]];
-      lut54_csb_read_data_bram[7]  = lut54_csb_007[lut54_csb_addr_reg[ 7][5:0]];
-      lut54_csb_read_data_bram[8]  = lut54_csb_008[lut54_csb_addr_reg[ 8][5:0]];
-      lut54_csb_read_data_bram[9]  = lut54_csb_009[lut54_csb_addr_reg[ 9][5:0]];
-      lut54_csb_read_data_bram[10] = lut54_csb_010[lut54_csb_addr_reg[10][5:0]];
-      lut54_csb_read_data_bram[11] = lut54_csb_011[lut54_csb_addr_reg[11][5:0]];
-      lut54_csb_read_data_bram[12] = lut54_csb_012[lut54_csb_addr_reg[12][5:0]];
-      lut54_csb_read_data_bram[13] = lut54_csb_013[lut54_csb_addr_reg[13][5:0]];
-      lut54_csb_read_data_bram[14] = lut54_csb_014[lut54_csb_addr_reg[14][5:0]];
-      lut54_csb_read_data_bram[15] = lut54_csb_015[lut54_csb_addr_reg[15][5:0]];
-      lut54_csb_read_data_bram[16] = lut54_csb_016[lut54_csb_addr_reg[16][5:0]];
-      lut54_csb_read_data_bram[17] = lut54_csb_017[lut54_csb_addr_reg[17][5:0]];
-      lut54_csb_read_data_bram[18] = lut54_csb_018[lut54_csb_addr_reg[18][5:0]];
-      lut54_csb_read_data_bram[19] = lut54_csb_019[lut54_csb_addr_reg[19][5:0]];
-      lut54_csb_read_data_bram[20] = lut54_csb_020[lut54_csb_addr_reg[20][5:0]];
-      lut54_csb_read_data_bram[21] = lut54_csb_021[lut54_csb_addr_reg[21][5:0]];
-      lut54_csb_read_data_bram[22] = lut54_csb_022[lut54_csb_addr_reg[22][5:0]];
-      lut54_csb_read_data_bram[23] = lut54_csb_023[lut54_csb_addr_reg[23][5:0]];
-      lut54_csb_read_data_bram[24] = lut54_csb_024[lut54_csb_addr_reg[24][5:0]];
-      lut54_csb_read_data_bram[25] = lut54_csb_025[lut54_csb_addr_reg[25][5:0]];
-      lut54_csb_read_data_bram[26] = lut54_csb_026[lut54_csb_addr_reg[26][5:0]];
-      lut54_csb_read_data_bram[27] = lut54_csb_027[lut54_csb_addr_reg[27][5:0]];
-      lut54_csb_read_data_bram[28] = lut54_csb_028[lut54_csb_addr_reg[28][5:0]];
-      lut54_csb_read_data_bram[29] = lut54_csb_029[lut54_csb_addr_reg[29][5:0]];
-      lut54_csb_read_data_bram[30] = lut54_csb_030[lut54_csb_addr_reg[30][5:0]];
-      lut54_csb_read_data_bram[31] = lut54_csb_031[lut54_csb_addr_reg[31][5:0]];
+      lut54_csb_read_data_bram[5]  = lut54_csb_005[lut54_csb_addr[ 5][5:0]];
+      lut54_csb_read_data_bram[6]  = lut54_csb_006[lut54_csb_addr[ 6][5:0]];
+      lut54_csb_read_data_bram[7]  = lut54_csb_007[lut54_csb_addr[ 7][5:0]];
+      lut54_csb_read_data_bram[8]  = lut54_csb_008[lut54_csb_addr[ 8][5:0]];
+      lut54_csb_read_data_bram[9]  = lut54_csb_009[lut54_csb_addr[ 9][5:0]];
+      lut54_csb_read_data_bram[10] = lut54_csb_010[lut54_csb_addr[10][5:0]];
+      lut54_csb_read_data_bram[11] = lut54_csb_011[lut54_csb_addr[11][5:0]];
+      lut54_csb_read_data_bram[12] = lut54_csb_012[lut54_csb_addr[12][5:0]];
+      lut54_csb_read_data_bram[13] = lut54_csb_013[lut54_csb_addr[13][5:0]];
+      lut54_csb_read_data_bram[14] = lut54_csb_014[lut54_csb_addr[14][5:0]];
+      lut54_csb_read_data_bram[15] = lut54_csb_015[lut54_csb_addr[15][5:0]];
+      lut54_csb_read_data_bram[16] = lut54_csb_016[lut54_csb_addr[16][5:0]];
+      lut54_csb_read_data_bram[17] = lut54_csb_017[lut54_csb_addr[17][5:0]];
+      lut54_csb_read_data_bram[18] = lut54_csb_018[lut54_csb_addr[18][5:0]];
+      lut54_csb_read_data_bram[19] = lut54_csb_019[lut54_csb_addr[19][5:0]];
+      lut54_csb_read_data_bram[20] = lut54_csb_020[lut54_csb_addr[20][5:0]];
+      lut54_csb_read_data_bram[21] = lut54_csb_021[lut54_csb_addr[21][5:0]];
+      lut54_csb_read_data_bram[22] = lut54_csb_022[lut54_csb_addr[22][5:0]];
+      lut54_csb_read_data_bram[23] = lut54_csb_023[lut54_csb_addr[23][5:0]];
+      lut54_csb_read_data_bram[24] = lut54_csb_024[lut54_csb_addr[24][5:0]];
+      lut54_csb_read_data_bram[25] = lut54_csb_025[lut54_csb_addr[25][5:0]];
+      lut54_csb_read_data_bram[26] = lut54_csb_026[lut54_csb_addr[26][5:0]];
+      lut54_csb_read_data_bram[27] = lut54_csb_027[lut54_csb_addr[27][5:0]];
+      lut54_csb_read_data_bram[28] = lut54_csb_028[lut54_csb_addr[28][5:0]];
+      lut54_csb_read_data_bram[29] = lut54_csb_029[lut54_csb_addr[29][5:0]];
+      lut54_csb_read_data_bram[30] = lut54_csb_030[lut54_csb_addr[30][5:0]];
+      lut54_csb_read_data_bram[31] = lut54_csb_031[lut54_csb_addr[31][5:0]];
       lut54_csb_read_data_bram[32] = 1024'b0; 
       lut54_csb_read_data_bram[33] = 1024'b0; 
       lut54_csb_read_data_bram[34] = 1024'b0; 
@@ -993,43 +991,43 @@ module full_reduction_lut
       lut54_msb_read_data_bram[2]  = lut54_msb_002[lut54_msb_addr[ 2][4:0]];
       lut54_msb_read_data_bram[3]  = lut54_msb_003[lut54_msb_addr[ 3][4:0]];
       lut54_msb_read_data_bram[4]  = lut54_msb_004[lut54_msb_addr[ 4][4:0]];
-      lut54_msb_read_data_bram[5]  = lut54_msb_005[lut54_msb_addr_reg[ 5][4:0]];
-      lut54_msb_read_data_bram[6]  = lut54_msb_006[lut54_msb_addr_reg[ 6][4:0]];
-      lut54_msb_read_data_bram[7]  = lut54_msb_007[lut54_msb_addr_reg[ 7][4:0]];
-      lut54_msb_read_data_bram[8]  = lut54_msb_008[lut54_msb_addr_reg[ 8][4:0]];
-      lut54_msb_read_data_bram[9]  = lut54_msb_009[lut54_msb_addr_reg[ 9][4:0]];
-      lut54_msb_read_data_bram[10] = lut54_msb_010[lut54_msb_addr_reg[10][4:0]];
-      lut54_msb_read_data_bram[11] = lut54_msb_011[lut54_msb_addr_reg[11][4:0]];
-      lut54_msb_read_data_bram[12] = lut54_msb_012[lut54_msb_addr_reg[12][4:0]];
-      lut54_msb_read_data_bram[13] = lut54_msb_013[lut54_msb_addr_reg[13][4:0]];
-      lut54_msb_read_data_bram[14] = lut54_msb_014[lut54_msb_addr_reg[14][4:0]];
-      lut54_msb_read_data_bram[15] = lut54_msb_015[lut54_msb_addr_reg[15][4:0]];
-      lut54_msb_read_data_bram[16] = lut54_msb_016[lut54_msb_addr_reg[16][4:0]];
-      lut54_msb_read_data_bram[17] = lut54_msb_017[lut54_msb_addr_reg[17][4:0]];
-      lut54_msb_read_data_bram[18] = lut54_msb_018[lut54_msb_addr_reg[18][4:0]];
-      lut54_msb_read_data_bram[19] = lut54_msb_019[lut54_msb_addr_reg[19][4:0]];
-      lut54_msb_read_data_bram[20] = lut54_msb_020[lut54_msb_addr_reg[20][4:0]];
-      lut54_msb_read_data_bram[21] = lut54_msb_021[lut54_msb_addr_reg[21][4:0]];
-      lut54_msb_read_data_bram[22] = lut54_msb_022[lut54_msb_addr_reg[22][4:0]];
-      lut54_msb_read_data_bram[23] = lut54_msb_023[lut54_msb_addr_reg[23][4:0]];
-      lut54_msb_read_data_bram[24] = lut54_msb_024[lut54_msb_addr_reg[24][4:0]];
-      lut54_msb_read_data_bram[25] = lut54_msb_025[lut54_msb_addr_reg[25][4:0]];
-      lut54_msb_read_data_bram[26] = lut54_msb_026[lut54_msb_addr_reg[26][4:0]];
-      lut54_msb_read_data_bram[27] = lut54_msb_027[lut54_msb_addr_reg[27][4:0]];
-      lut54_msb_read_data_bram[28] = lut54_msb_028[lut54_msb_addr_reg[28][4:0]];
-      lut54_msb_read_data_bram[29] = lut54_msb_029[lut54_msb_addr_reg[29][4:0]];
-      lut54_msb_read_data_bram[30] = lut54_msb_030[lut54_msb_addr_reg[30][4:0]];
-      lut54_msb_read_data_bram[31] = lut54_msb_031[lut54_msb_addr_reg[31][4:0]];
+      lut54_msb_read_data_bram[5]  = lut54_msb_005[lut54_msb_addr[ 5][4:0]];
+      lut54_msb_read_data_bram[6]  = lut54_msb_006[lut54_msb_addr[ 6][4:0]];
+      lut54_msb_read_data_bram[7]  = lut54_msb_007[lut54_msb_addr[ 7][4:0]];
+      lut54_msb_read_data_bram[8]  = lut54_msb_008[lut54_msb_addr[ 8][4:0]];
+      lut54_msb_read_data_bram[9]  = lut54_msb_009[lut54_msb_addr[ 9][4:0]];
+      lut54_msb_read_data_bram[10] = lut54_msb_010[lut54_msb_addr[10][4:0]];
+      lut54_msb_read_data_bram[11] = lut54_msb_011[lut54_msb_addr[11][4:0]];
+      lut54_msb_read_data_bram[12] = lut54_msb_012[lut54_msb_addr[12][4:0]];
+      lut54_msb_read_data_bram[13] = lut54_msb_013[lut54_msb_addr[13][4:0]];
+      lut54_msb_read_data_bram[14] = lut54_msb_014[lut54_msb_addr[14][4:0]];
+      lut54_msb_read_data_bram[15] = lut54_msb_015[lut54_msb_addr[15][4:0]];
+      lut54_msb_read_data_bram[16] = lut54_msb_016[lut54_msb_addr[16][4:0]];
+      lut54_msb_read_data_bram[17] = lut54_msb_017[lut54_msb_addr[17][4:0]];
+      lut54_msb_read_data_bram[18] = lut54_msb_018[lut54_msb_addr[18][4:0]];
+      lut54_msb_read_data_bram[19] = lut54_msb_019[lut54_msb_addr[19][4:0]];
+      lut54_msb_read_data_bram[20] = lut54_msb_020[lut54_msb_addr[20][4:0]];
+      lut54_msb_read_data_bram[21] = lut54_msb_021[lut54_msb_addr[21][4:0]];
+      lut54_msb_read_data_bram[22] = lut54_msb_022[lut54_msb_addr[22][4:0]];
+      lut54_msb_read_data_bram[23] = lut54_msb_023[lut54_msb_addr[23][4:0]];
+      lut54_msb_read_data_bram[24] = lut54_msb_024[lut54_msb_addr[24][4:0]];
+      lut54_msb_read_data_bram[25] = lut54_msb_025[lut54_msb_addr[25][4:0]];
+      lut54_msb_read_data_bram[26] = lut54_msb_026[lut54_msb_addr[26][4:0]];
+      lut54_msb_read_data_bram[27] = lut54_msb_027[lut54_msb_addr[27][4:0]];
+      lut54_msb_read_data_bram[28] = lut54_msb_028[lut54_msb_addr[28][4:0]];
+      lut54_msb_read_data_bram[29] = lut54_msb_029[lut54_msb_addr[29][4:0]];
+      lut54_msb_read_data_bram[30] = lut54_msb_030[lut54_msb_addr[30][4:0]];
+      lut54_msb_read_data_bram[31] = lut54_msb_031[lut54_msb_addr[31][4:0]];
       lut54_msb_read_data_bram[32] = 1024'b0; 
       lut54_msb_read_data_bram[33] = 1024'b0; 
       lut54_msb_read_data_bram[34] = 1024'b0; 
       lut54_msb_read_data_bram[35] = 1024'b0; 
 
-      lut76_lsb_read_data_bram[0]  = lut76_lsb_000[lut76_lsb_addr_reg[ 0][5:0]];
-      lut76_lsb_read_data_bram[1]  = lut76_lsb_001[lut76_lsb_addr_reg[ 1][5:0]];
-      lut76_lsb_read_data_bram[2]  = lut76_lsb_002[lut76_lsb_addr_reg[ 2][5:0]];
-      lut76_lsb_read_data_bram[3]  = lut76_lsb_003[lut76_lsb_addr_reg[ 3][5:0]];
-      lut76_lsb_read_data_bram[4]  = lut76_lsb_004[lut76_lsb_addr_reg[ 4][5:0]];
+      lut76_lsb_read_data_bram[0]  = lut76_lsb_000[lut76_lsb_addr[ 0][5:0]];
+      lut76_lsb_read_data_bram[1]  = lut76_lsb_001[lut76_lsb_addr[ 1][5:0]];
+      lut76_lsb_read_data_bram[2]  = lut76_lsb_002[lut76_lsb_addr[ 2][5:0]];
+      lut76_lsb_read_data_bram[3]  = lut76_lsb_003[lut76_lsb_addr[ 3][5:0]];
+      lut76_lsb_read_data_bram[4]  = lut76_lsb_004[lut76_lsb_addr[ 4][5:0]];
       lut76_lsb_read_data_bram[5]  = lut76_lsb_005[lut76_lsb_addr_reg[ 5][5:0]];
       lut76_lsb_read_data_bram[6]  = lut76_lsb_006[lut76_lsb_addr_reg[ 6][5:0]];
       lut76_lsb_read_data_bram[7]  = lut76_lsb_007[lut76_lsb_addr_reg[ 7][5:0]];
@@ -1062,11 +1060,11 @@ module full_reduction_lut
       lut76_lsb_read_data_bram[34] = lut76_lsb_034[lut76_lsb_addr_reg[34][5:0]];
       lut76_lsb_read_data_bram[35] = lut76_lsb_035[lut76_lsb_addr_reg[35][5:0]];
 
-      lut76_csb_read_data_bram[0]  = lut76_csb_000[lut76_csb_addr_reg[ 0][5:0]];
-      lut76_csb_read_data_bram[1]  = lut76_csb_001[lut76_csb_addr_reg[ 1][5:0]];
-      lut76_csb_read_data_bram[2]  = lut76_csb_002[lut76_csb_addr_reg[ 2][5:0]];
-      lut76_csb_read_data_bram[3]  = lut76_csb_003[lut76_csb_addr_reg[ 3][5:0]];
-      lut76_csb_read_data_bram[4]  = lut76_csb_004[lut76_csb_addr_reg[ 4][5:0]];
+      lut76_csb_read_data_bram[0]  = lut76_csb_000[lut76_csb_addr[ 0][5:0]];
+      lut76_csb_read_data_bram[1]  = lut76_csb_001[lut76_csb_addr[ 1][5:0]];
+      lut76_csb_read_data_bram[2]  = lut76_csb_002[lut76_csb_addr[ 2][5:0]];
+      lut76_csb_read_data_bram[3]  = lut76_csb_003[lut76_csb_addr[ 3][5:0]];
+      lut76_csb_read_data_bram[4]  = lut76_csb_004[lut76_csb_addr[ 4][5:0]];
       lut76_csb_read_data_bram[5]  = lut76_csb_005[lut76_csb_addr_reg[ 5][5:0]];
       lut76_csb_read_data_bram[6]  = lut76_csb_006[lut76_csb_addr_reg[ 6][5:0]];
       lut76_csb_read_data_bram[7]  = lut76_csb_007[lut76_csb_addr_reg[ 7][5:0]];
@@ -1099,11 +1097,11 @@ module full_reduction_lut
       lut76_csb_read_data_bram[34] = lut76_csb_034[lut76_csb_addr_reg[34][5:0]];
       lut76_csb_read_data_bram[35] = lut76_csb_035[lut76_csb_addr_reg[35][5:0]];
 
-      lut76_msb_read_data_bram[0]  = lut76_msb_000[lut76_msb_addr_reg[ 0][4:0]];
-      lut76_msb_read_data_bram[1]  = lut76_msb_001[lut76_msb_addr_reg[ 1][4:0]];
-      lut76_msb_read_data_bram[2]  = lut76_msb_002[lut76_msb_addr_reg[ 2][4:0]];
-      lut76_msb_read_data_bram[3]  = lut76_msb_003[lut76_msb_addr_reg[ 3][4:0]];
-      lut76_msb_read_data_bram[4]  = lut76_msb_004[lut76_msb_addr_reg[ 4][4:0]];
+      lut76_msb_read_data_bram[0]  = lut76_msb_000[lut76_msb_addr[ 0][4:0]];
+      lut76_msb_read_data_bram[1]  = lut76_msb_001[lut76_msb_addr[ 1][4:0]];
+      lut76_msb_read_data_bram[2]  = lut76_msb_002[lut76_msb_addr[ 2][4:0]];
+      lut76_msb_read_data_bram[3]  = lut76_msb_003[lut76_msb_addr[ 3][4:0]];
+      lut76_msb_read_data_bram[4]  = lut76_msb_004[lut76_msb_addr[ 4][4:0]];
       lut76_msb_read_data_bram[5]  = lut76_msb_005[lut76_msb_addr_reg[ 5][4:0]];
       lut76_msb_read_data_bram[6]  = lut76_msb_006[lut76_msb_addr_reg[ 6][4:0]];
       lut76_msb_read_data_bram[7]  = lut76_msb_007[lut76_msb_addr_reg[ 7][4:0]];
