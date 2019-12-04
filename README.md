@@ -1,4 +1,68 @@
+# VDF Alliance FPGA Competition – Round 2
+
+### December 4, 2019
+Second Round, First Submission
+
+## Team Name
+Eric Pearson
+
+## Round 2 Results
+
+|                | Constraint |
+|---------------:|:----------:|
+|      PLL Ratio | 87:102     |
+|Clock frequency | 146.6 MHz  |
+|   ModSq period | 27.3 ns    | 
+|      WNS Slack | 0.33 ns   |
+
+Using post-route pll adjustmest for:
+
+|                | Result    |
+|---------------:|:---------:|
+|      PLL Ratio | 86:102     |
+|Clock frequency | 148.3 MHz  |
+|   ModSq period | 26.98 ns    | 
+
+All user specified timing constraints are met.
+
+### Overall latency =  27.0ns
+
+### Improvement over 2nd Round 28.6ns baseline = 1.6 ns
+
+## Design Description
+See [submission.txt](submission.txt) for submission description details.
+
+## Team Photo
+
+![Eric Pearson](eric_photo.jpg "Eric Pearson")
+Eric Pearson
+
+
+
+
 # VDF FPGA Competition Baseline Model
+
+# Round 2 is now started!
+
+Round 1 of the competition closed at the end of September. You can see full results and submissions in the [Round 1 GitHub repo]<https://github.com/supranational/vdf-fpga-round1-results>. 
+
+Round 2 starts as of October 15. See the [Round 2 Wiki]<https://supranational.atlassian.net/wiki/spaces/VA/pages/48758785/FPGA+Competition+Round+2> for parameters for round 2 as well as some takeaways and advice based on round 1. 
+
+For round 2 the infrastructure has not changed so documentation and instructions below are generally still valid. Keep in mind that the following key inputs have changed from round 1:
+
+**Baseline latency**<br>
+28.6 ns/sq
+
+**Prize**<br>
+$5000 / ns improvement over the baseline
+
+**Repeated squarings for evaluation**<br>
+t=2^33 (~4 minutes)
+
+**Precommit of x to be used for evaluation (sha256)**<br>
+a09374efbe0b2dba7a779fb1c7768479d004beff1bf05030dbd03d54c4f3fdcf
+
+# Round 1 archival material
 
 This repository contains the modular squaring multiplier baseline design for the VDF (Verifiable Delay Function) low latency multiplier FPGA competition. For more information about the research behind VDFs see <https://vdfresearch.org/>.
 
@@ -64,7 +128,7 @@ h = x
 print(h)
 ```
 
-## Interface
+## Basic Interface
 
 The competition uses the AWS F1/Xilinx SDAccel build infrastructure described in [aws_f1](docs/aws_f1.md) to measure performance and functional correctness. If you conform to the following interface your design should function correctly in F1 in the provided software/control infrastructure.
 
@@ -108,7 +172,32 @@ See [modular_square/rtl/modular_square_simple.sv](modular_square/rtl/modular_squ
 
 See [modular_square/rtl/modular_square_8_cycles.sv](modular_square/rtl/modular_square_8_cycles.sv). This is an implementation of the multiplier developed by Erdinc Ozturk of Sabanci University and described in detail at [MIT VDF Day 2019](https://dci.mit.edu/video-gallery/2019/5/29/survey-of-hardware-multiplier-techniques-new-innovations-in-low-latency-multipliers-e-ozturk) and in [Modular Multiplication Algorithm Suitable For Low-Latency Circuit Implementations](https://eprint.iacr.org/2019/826). 
 
-There are several potential paths for alternative designs and optimizations noted below. 
+
+**Ozturk Interface**
+
+The Ozturk multiplier takes advantage of redundant polynomial representation to reduce latency for squaring and reduction. Similar to Montgomery form it is advantageous to stay in redundant representation until the target number of squarings is complete. As a result the Ozturk interface is modified to return twice as many bits. 
+
+In addition there is a wrapper module that unpacks/packs the bits of sq_in/sq_out between vector and polynomial form.
+
+```
+module modular_square_wrapper
+   #(
+     parameter int MOD_LEN     = 1024,
+     parameter int SQ_OUT_BITS = 2048
+    )
+   (
+    input logic                     clk,
+    input logic                     reset,
+    input logic                     start,
+    input logic [MOD_LEN-1:0]       sq_in,
+    output logic [SQ_OUT_BITS-1:0]  sq_out,
+    output logic                    valid
+   );
+   
+   // This module instantiates modular_square_8_cycles (Ozturk multiplier)
+```
+
+Each 17-bit coefficient is returned to the driver as 32 bits (one AXI transaction). The final reduction is completed in software inside the timer in msu/sw/Squarer.hpp unpack(). 
 
 ## Step 1 - Develop your multiplier
 
@@ -143,7 +232,6 @@ There are several potential paths for alternative designs and optimizations note
         * Click Run Simulation->Run Behavioral Simulation
         * The test is self checking and should print "SUCCESS". 
     * The simulation prints cycles per squaring statistics. This, along with synthesis timing results, provides an estimate of latency per squaring.
-    * You can also use [verilator](docs/verilator.md) if you prefer by running 'cd msu/rtl; make'. No license required.
 1. Run out-of-context synthesis + place and route to understand and tune performance. A pblock is set up to mimic the AWS F1 Shell exclusion zone. In our exprience these results are pretty close to what you will get on F1 and and provide an easier/faster/more intuitive interface for improving the design.
 1. Once you have the 30 day trial license you can enable the vu9p part, which is the target of the contest.
     * Help -> Add Design Tools or Devices, sign in
@@ -235,6 +323,19 @@ Company/ Organization (if applicable):
 Website (if applicable):
 
 The above information can be e-mailed to hello@vdfalliance.org. The GitHub repository that is shared must contain non-trivial changes to the baseline repository and will be open-sourced at the completion of the contest.
+
+**Automated Test Portal**
+
+In addition to the resources above we are making available an automated test portal to aid in the development process. The portal operates through a WebHook installed in a shared GitHub repository. Pushes to the 'vdf-portal' branch are cloned and run through hardware emulation, synthesis, and bitstream generation in the AWS F1 environment. Results in the form of logs and other files are provided back to the submitter for inspection. 
+
+To receive access to the portal please complete an entry form, share your contest entry GitHub with the account "simonatsn", and provide the following information:
+
+First Name:  
+Last Name:  
+GitHub repo:  
+Email(s) for test portal automated job updates:  
+
+The above information can be e-mailed to hello@vdfalliance.org.
 
 ## Questions?
 
