@@ -30,7 +30,7 @@ All user specified timing constraints are met.
 ### Improvement over 2nd Round 28.6ns baseline = 1.6 ns
 
 ## Design Description
-See [submission.txt](submission.txt) for submission description details.
+See [submission_form.txt](submission_form.txt) for submission description details.
 
 ## Team Photo
 
