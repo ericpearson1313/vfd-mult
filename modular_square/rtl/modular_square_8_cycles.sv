@@ -102,8 +102,10 @@ module modular_square_8_cycles
    logic [BIT_LEN-1:0]       lut_data3[NUM_ELEMENTS][ACC_ELEMENTS]; // 66 words (of 36 luts) of 17b
    logic [BIT_LEN-1:0]       lut_data4[NUM_ELEMENTS][ACC_ELEMENTS]; // 66 words (of 36 luts) of 17b
    logic [BIT_LEN-1:0]       lut_data5[NUM_ELEMENTS][ACC_ELEMENTS]; // 66 words (of 36 luts) of 17b
+   logic [BIT_LEN-1:0]       lut_data6[NUM_ELEMENTS]; // 66 words (of 1 luts) of 17b
+   logic [BIT_LEN-1:0]       lut_data7[NUM_ELEMENTS]; // 66 words (of 1 luts) of 17b
 
-   logic [ACC_BIT_LEN-1:0]   acc_stack[NUM_ELEMENTS][205]; // 66 sumation columns, each of 205=3*32+3*36+1 of 25b
+   logic [ACC_BIT_LEN-1:0]   acc_stack[NUM_ELEMENTS][207]; // 66 sumation columns, each of 205=3*32+3*36+1+2 of 25b
    logic [ACC_BIT_LEN-1:0]   acc_C[NUM_ELEMENTS]; // 66 words of 17+12=25b
    logic [ACC_BIT_LEN-1:0]   acc_S[NUM_ELEMENTS]; // 66 words of 17+12=25b
 
@@ -227,9 +229,15 @@ module modular_square_8_cycles
    // Set values for which segments to lookup in reduction LUTs
    always_comb begin
       for (int k=0; k<ACC_ELEMENTS; k=k+1) begin
-         lut_addr0[k][5:0] = {       reduced_grid_sum[k+64][ 5: 0]}; // LBS6 of lower V54 words
-         lut_addr1[k][5:0] = {       reduced_grid_sum[k+64][11: 6]}; // CSB6 of lower V54 words
-         lut_addr2[k][5:0] = { 1'b0, reduced_grid_sum[k+64][16:12]}; // MSB5 of lower V54 words
+         if( k == 0 ) begin // lsb product acc of V54 only, split from carray from of msb mult of V30
+           lut_addr0[k][5:0] = {               grid_sum[64][ 5: 0]}; // LBS6 of lower V54 words, without V30 prod msbs
+           lut_addr1[k][5:0] = {               grid_sum[64][11: 6]}; // CSB6 of lower V54 words, without V30 prod msbs
+           lut_addr2[k][5:0] = { 2'b00,        grid_sum[64][15:12]}; // MSB5 of lower V54 words, without V30 prod msbs
+         end else begin // Continue as normal, referencing previous sum
+           lut_addr0[k][5:0] = {       reduced_grid_sum[k+64][ 5: 0]}; // LBS6 of lower V54 words
+           lut_addr1[k][5:0] = {       reduced_grid_sum[k+64][11: 6]}; // CSB6 of lower V54 words
+           lut_addr2[k][5:0] = { 1'b0, reduced_grid_sum[k+64][16:12]}; // MSB5 of lower V54 words
+         end
          lut_addr3[k][5:0] = {       reduced_grid_sum[k+96][ 5: 0]}; // LSB6 of Upper V76 words
          lut_addr4[k][5:0] = {       reduced_grid_sum[k+96][11: 6]}; // CSB6 of upper V76 words
          lut_addr5[k][5:0] = { 1'b0, reduced_grid_sum[k+96][16:12]}; // MSB5 of upper V76 words
@@ -240,12 +248,16 @@ module modular_square_8_cycles
    full_reduction_lut reduction_lut_ (
                      .ren( curr_cycle[CYCLE_1] ), // enable Lut regs
                      .clk( clk ), // brams must be clocked, but not lutrams :)
+                     .lut30_lsb_addr(          grid_sum[63][21:16]   ),
+                     .lut30_csb_addr( { 2'b00, grid_sum[63][25:22] } ),
                      .lut54_lsb_addr( lut_addr0 ),
                      .lut54_csb_addr( lut_addr1 ),
                      .lut54_msb_addr( lut_addr2 ),
                      .lut76_lsb_addr( lut_addr3 ),
                      .lut76_csb_addr( lut_addr4 ),
                      .lut76_msb_addr( lut_addr5 ),
+                     .lut30_lsb_data( lut_data6 ),
+                     .lut30_csb_data( lut_data7 ),
                      .lut54_lsb_data( lut_data0 ), // use 32 luts
                      .lut54_csb_data( lut_data1 ), // use 32 luts
                      .lut54_msb_data( lut_data2 ), // use 32 luts
@@ -258,7 +270,7 @@ module modular_square_8_cycles
    always_comb begin
       // zero acc array   
       for (int k=0; k<NUM_ELEMENTS; k=k+1) begin
-         for (int j=0; j<205; j=j+1) begin
+         for (int j=0; j<207; j=j+1) begin
             acc_stack[k][j][ACC_BIT_LEN-1:0] = 0;
          end
       end
@@ -282,6 +294,12 @@ module modular_square_8_cycles
       for (int k=0; k<NONREDUNDANT_ELEMENTS; k=k+1) begin
          acc_stack[k][204][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, reduced_grid_sum[k][BIT_LEN-1:0]};
       end
+      // V30 reduced grid sum carry out word is split and has its own luts, only 2 luts needed
+      for (int k=0; k<NUM_ELEMENTS; k=k+1) begin
+         acc_stack[k][205][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data6[k][BIT_LEN-1:0]};
+         acc_stack[k][206][ACC_BIT_LEN-1:0] = {{ACC_EXTRA_BIT_LEN{1'b0}}, lut_data7[k][BIT_LEN-1:0]};
+      end
+      
    end
 
    // Instantiate compressor trees to accumulate over accumulator columns
@@ -299,7 +317,7 @@ module modular_square_8_cycles
 //                                   );
             assign acc_C[i] = 0;
             adder_tree_2_to_1 #(
-                .NUM_ELEMENTS( 205 ), // V54(32x) lsb, csb, msb, V76(36x) lsb, msb, V30
+                .NUM_ELEMENTS( 207 ), // V30(1x) lsb, csb, V54(32x) lsb, csb, msb, V76(36x) lsb, msb, V30
                 .BIT_LEN(ACC_BIT_LEN)
             ) adder_tree_2_to_1 (
                 .terms(acc_stack[i]),
@@ -553,6 +571,8 @@ module full_reduction_lut
    (
     input  logic clk,
     input  logic ren,
+    input  logic [5:0]   lut30_lsb_addr, // V30 32 x lsb [5:0]
+    input  logic [5:0]   lut30_csb_addr, // V30 32 x csb [11:6]
     input  logic [5:0]   lut54_lsb_addr[LUT_NUM_ELEMENTS], // V54 32 x lsb [5:0]
     input  logic [5:0]   lut54_csb_addr[LUT_NUM_ELEMENTS], // V54 32 x csb [11:6]
     input  logic [5:0]   lut54_msb_addr[LUT_NUM_ELEMENTS], // V54 32 x msb [16:12] - only 5 bit used
@@ -560,6 +580,8 @@ module full_reduction_lut
     input  logic [5:0]   lut76_csb_addr[LUT_NUM_ELEMENTS], // V76 36 x csb [11:6]                   
     input  logic [5:0]   lut76_msb_addr[LUT_NUM_ELEMENTS], // V76 36 x msb [16:12]                   
     
+    output logic [BIT_LEN-1:0]       lut30_lsb_data[NUM_ELEMENTS],
+    output logic [BIT_LEN-1:0]       lut30_csb_data[NUM_ELEMENTS],
     output logic [BIT_LEN-1:0]       lut54_lsb_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
     output logic [BIT_LEN-1:0]       lut54_csb_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
     output logic [BIT_LEN-1:0]       lut54_msb_data[NUM_ELEMENTS][LUT_NUM_ELEMENTS],
@@ -574,6 +596,8 @@ module full_reduction_lut
 
    localparam int NUM_BRAM          = LUT_NUM_ELEMENTS;
 
+   logic [5:0]   lut30_lsb_addr_reg;
+   logic [5:0]   lut30_csb_addr_reg;
    logic [5:0]   lut54_lsb_addr_reg[LUT_NUM_ELEMENTS];
    logic [5:0]   lut54_csb_addr_reg[LUT_NUM_ELEMENTS];
    logic [5:0]   lut54_msb_addr_reg[LUT_NUM_ELEMENTS];
@@ -581,6 +605,8 @@ module full_reduction_lut
    logic [5:0]   lut76_csb_addr_reg[LUT_NUM_ELEMENTS];
    logic [5:0]   lut76_msb_addr_reg[LUT_NUM_ELEMENTS];
    
+   logic [LUT_WIDTH-1:0]  lut30_lsb_read_data;
+   logic [LUT_WIDTH-1:0]  lut30_csb_read_data;
    logic [LUT_WIDTH-1:0]  lut54_lsb_read_data[LUT_NUM_ELEMENTS];
    logic [LUT_WIDTH-1:0]  lut54_csb_read_data[LUT_NUM_ELEMENTS];
    logic [LUT_WIDTH-1:0]  lut54_msb_read_data[LUT_NUM_ELEMENTS];
@@ -588,12 +614,17 @@ module full_reduction_lut
    logic [LUT_WIDTH-1:0]  lut76_csb_read_data[LUT_NUM_ELEMENTS];
    logic [LUT_WIDTH-1:0]  lut76_msb_read_data[LUT_NUM_ELEMENTS];
    
+   logic [LUT_WIDTH-1:0]  lut30_lsb_read_data_bram;
+   logic [LUT_WIDTH-1:0]  lut30_csb_read_data_bram;
    logic [LUT_WIDTH-1:0]  lut54_lsb_read_data_bram[NUM_BRAM];
    logic [LUT_WIDTH-1:0]  lut54_csb_read_data_bram[NUM_BRAM];
    logic [LUT_WIDTH-1:0]  lut54_msb_read_data_bram[NUM_BRAM];
    logic [LUT_WIDTH-1:0]  lut76_lsb_read_data_bram[NUM_BRAM];
    logic [LUT_WIDTH-1:0]  lut76_csb_read_data_bram[NUM_BRAM];
    logic [LUT_WIDTH-1:0]  lut76_msb_read_data_bram[NUM_BRAM];
+
+   logic [BIT_LEN-1:0]    lut30_lsb_output[NUM_ELEMENTS];
+   logic [BIT_LEN-1:0]    lut30_csb_output[NUM_ELEMENTS];
    logic [BIT_LEN-1:0]    lut54_lsb_output[NUM_ELEMENTS][LUT_NUM_ELEMENTS];
    logic [BIT_LEN-1:0]    lut54_csb_output[NUM_ELEMENTS][LUT_NUM_ELEMENTS];
    logic [BIT_LEN-1:0]    lut54_msb_output[NUM_ELEMENTS][LUT_NUM_ELEMENTS];
@@ -639,6 +670,8 @@ module full_reduction_lut
    (* rom_style = "distributed" *) logic [LUT_WIDTH-1:0] lut76_lsb_034[64], lut76_csb_034[64], lut76_msb_034[32];
    (* rom_style = "distributed" *) logic [LUT_WIDTH-1:0] lut76_lsb_035[64], lut76_csb_035[64], lut76_msb_035[32];
 
+   (* rom_style = "distributed" *) logic [LUT_WIDTH-1:0] lut30_lsb[64], lut30_csb[64];
+
    (* rom_style = "distributed" *) logic [LUT_WIDTH-1:0] lut54_lsb_000[64], lut54_csb_000[64], lut54_msb_000[32];
    (* rom_style = "distributed" *) logic [LUT_WIDTH-1:0] lut54_lsb_001[64], lut54_csb_001[64], lut54_msb_001[32];
    (* rom_style = "distributed" *) logic [LUT_WIDTH-1:0] lut54_lsb_002[64], lut54_csb_002[64], lut54_msb_002[32];
@@ -677,6 +710,9 @@ module full_reduction_lut
    (* rom_style = "distributed" *) logic [LUT_WIDTH-1:0] lut54_lsb_035[64], lut54_csb_035[64], lut54_msb_035[32];
 
    initial begin
+      $readmemh("reduction_lut_54_000.dat", lut30_lsb    );
+      $readmemh("reduction_lut_54_000.dat", lut30_csb    );
+
       $readmemh("reduction_lut_54_000.dat", lut54_lsb_000);
       $readmemh("reduction_lut_54_001.dat", lut54_lsb_001);
       $readmemh("reduction_lut_54_002.dat", lut54_lsb_002);
@@ -902,6 +938,8 @@ module full_reduction_lut
    
    always_ff @(posedge clk) begin
      if( ren ) begin
+        lut30_lsb_addr_reg <= lut30_lsb_addr;
+        lut30_csb_addr_reg <= lut30_csb_addr;
         lut54_lsb_addr_reg <= lut54_lsb_addr;
         lut54_csb_addr_reg <= lut54_csb_addr;
         lut54_msb_addr_reg <= lut54_msb_addr;
@@ -912,6 +950,9 @@ module full_reduction_lut
    end
 
    always_comb begin
+      lut30_lsb_read_data_bram     = lut30_lsb[lut30_lsb_addr[5:0]];
+      lut30_csb_read_data_bram     = lut30_csb[lut30_csb_addr[5:0]];
+      
       lut54_lsb_read_data_bram[0]  = lut54_lsb_000[lut54_lsb_addr[ 0][5:0]];
       lut54_lsb_read_data_bram[1]  = lut54_lsb_001[lut54_lsb_addr[ 1][5:0]];
       lut54_lsb_read_data_bram[2]  = lut54_lsb_002[lut54_lsb_addr[ 2][5:0]];
@@ -1137,6 +1178,8 @@ module full_reduction_lut
 
    // Read data out of the memories
    always_comb begin
+      lut30_lsb_read_data = lut30_lsb_read_data_bram;
+      lut30_csb_read_data = lut30_csb_read_data_bram;
       for (int k=0; k<NUM_BRAM; k=k+1) begin
          lut54_lsb_read_data[k] = lut54_lsb_read_data_bram[k];
          lut54_csb_read_data[k] = lut54_csb_read_data_bram[k];
@@ -1149,8 +1192,10 @@ module full_reduction_lut
 
    always_comb begin
       // default all outputs 
-      for (int k=0; k<LUT_NUM_ELEMENTS; k=k+1) begin
-         for (int l=0; l<NUM_ELEMENTS; l=l+1) begin
+      for (int l=0; l<NUM_ELEMENTS; l=l+1) begin
+         lut30_lsb_output[l] = '0;
+         lut30_csb_output[l] = '0;
+         for (int k=0; k<LUT_NUM_ELEMENTS; k=k+1) begin
             lut54_lsb_output[l][k] = '0;
             lut54_csb_output[l][k] = '0;
             lut54_msb_output[l][k] = '0;
@@ -1159,6 +1204,17 @@ module full_reduction_lut
             lut76_msb_output[l][k] = '0;
          end
       end
+
+      // LUT30
+      lut30_csb_output[0][16:0] = { 1'b0, lut30_csb_read_data[9:0], 6'b000000};
+      for (int l=1; l<64; l=l+1) begin
+         lut30_csb_output[l][16:0] = { 1'b0, lut30_csb_read_data[(l*WORD_LEN)-6 +: WORD_LEN] };
+      end
+      lut30_csb_output[64][16:0] = {11'b0, lut30_csb_read_data[1023:1018] };
+
+      for (int l=0; l<64; l=l+1) begin
+         lut30_lsb_output[l][16:0] = {1'b0, lut30_lsb_read_data[(l*WORD_LEN)-0 +: WORD_LEN]};
+      end   
 
       for (int k=0; k<LUT_NUM_ELEMENTS; k=k+1) begin
          // LUT54      
@@ -1199,6 +1255,8 @@ module full_reduction_lut
 
    // Need above loops in combo block for Verilator to process
    always_comb begin
+      lut30_lsb_data  = lut30_lsb_output;
+      lut30_csb_data  = lut30_csb_output;
       lut54_lsb_data  = lut54_lsb_output;
       lut54_csb_data  = lut54_csb_output;
       lut54_msb_data  = lut54_msb_output;
