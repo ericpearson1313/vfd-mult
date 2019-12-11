@@ -1,7 +1,7 @@
 # VDF Alliance FPGA Competition – Round 2
 
-### December 4, 2019
-Second Round, First Submission
+### December 11, 2019
+Second Round, Second Submission
 
 ## Team Name
 Eric Pearson
@@ -10,24 +10,16 @@ Eric Pearson
 
 |                | Constraint |
 |---------------:|:----------:|
-|      PLL Ratio | 87:102     |
-|Clock frequency | 146.6 MHz  |
-|   ModSq period | 27.3 ns    | 
-|      WNS Slack | 0.33 ns   |
-
-Using post-route pll adjustmest for:
-
-|                | Result    |
-|---------------:|:---------:|
-|      PLL Ratio | 86:102     |
-|Clock frequency | 148.3 MHz  |
-|   ModSq period | 26.98 ns    | 
+|      PLL Ratio |   160:203  |
+|Clock frequency | 158.6 MHz  |
+|   ModSq period |  25.2 ns   | 
+|      WNS Slack |     7 ps   |
 
 All user specified timing constraints are met.
 
-### Overall latency =  27.0ns
+### Overall latency =  25.2.0ns
 
-### Improvement over 2nd Round 28.6ns baseline = 1.6 ns
+### Improvement over 2nd Round 28.6ns baseline = 3.4 ns
 
 ## Design Description
 See [submission_form.txt](submission_form.txt) for submission description details.
@@ -36,6 +28,8 @@ See [submission_form.txt](submission_form.txt) for submission description detail
 
 ![Eric Pearson](eric_photo.jpg "Eric Pearson")
 Eric Pearson
+
+
 
 
 

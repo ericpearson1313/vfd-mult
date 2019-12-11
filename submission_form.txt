@@ -8,7 +8,7 @@ To submit your design:
 - email your final repo + commit to hello@vdfalliance.org
 
 Team name: Eric Pearson
-Expected result (avg ns/square): 27.0 nS, 4 cyc @ 148.3 Mhz.
+Expected result (avg ns/square): 25.2 nS, 4 cyc @ 158.6 Mhz.
 Design documentation (* = round 2 improvements):
 - Used same numeric representation, word length, and interface as in the provided reference.
 - unrolled as 2 stage pipeline, with lut address = square product register. see: modular_square/model/pictures.txt
@@ -21,8 +21,6 @@ Design documentation (* = round 2 improvements):
 - Power savings by reset of modsqr unit upon while IDLE or upon completion of itterations.
 - Power ramp up of 1ms by integrated ramp pulse modulated delay of state machine register enables.
 - Clock domain crossing logic in the wrapper. Max-delay timing constraints.
-* MMCM pll 102:87 clock multiplier of 125 Mhz ref to give 146.6 Mhz or 27.3ns. 
-* Observed post route timing margin slack of 335ps on modsq_clk_pll
-* Post route PLL adjust 102:86 to give 148.3 Mhz for measured 27.0ns. Observe final timing report shows all timing passed at this frequency.
+* MMCM pll 203:160 clock multiplier of 125 Mhz ref to give 158.6 Mhz or 25.2ns. 
 - For simulation modify POWER_RAMP to 'h100 (normally 'h1 for synth). See line 57 in modular_square_8_cycles.sv
 
